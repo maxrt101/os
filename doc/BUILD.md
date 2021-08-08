@@ -53,16 +53,10 @@ include $(COMMON)
 include $(PACKAGE)
 
 TARGET        := $(BINDIR)/test
-
 CSRC          := test.c main.c
-OBJS          := $(addprefix $(PKG_BUILD_DIR), $(COBJS))
-
-define Compile/C
-  $(CC) $(CFLAGS) $1 -o $2
-endif
 
 define Build/Compile
-  $(foreach file, $(CSRC), $(call Compile/C,$(file),)
+  $(call Build/Compile/C, $(CSRC), $(TARGET))
 endef
 ```
 ### 3. Building
