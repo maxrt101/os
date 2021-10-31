@@ -1,8 +1,22 @@
 # pacakge.mk
 
-export PKG_BUILD_DIR := $(BUILDDIR)/$(PKG_NAME)
+include $(INCLUDE_DIR)/build.mk
+include $(INCLUDE_DIR)/target.mk
+
+ifeq ("$(PKG_HOST)","1")
+include $(INCLUDE_DIR)/host.mk
+else
+include $(INCLUDE_DIR)/cross.mk
+endif
+
+export PKG_BUILD_DIR := $(BUILD_DIR)/$(PACKAGES_DIR)/$(PKG_NAME)
 
 # Internal functions
+define Build/ExternalDependency
+	$(if $(V), $(info build $(PKG_NAME) dependency $(1)/$(2)))
+	make -C $(1)/$(2)
+endef
+
 define Build/Dependency
 	$(if $(V), $(info build $(PKG_NAME) dependency $(PACKAGES_DIR)/$(1)))
 	make -C $(PACKAGES_DIR)/$(1)
@@ -42,7 +56,7 @@ define Build/Build
 	}; do_build
 endef
 
-# For external Use
+# Authomatic Compile
 define Build/Compile/C
 	do_compile() { \
 		for FILE in $$1; do \
@@ -59,6 +73,11 @@ define Build/Compile/CPP
 		done; \
 	}; do_compile "$1";
 	$(CXX) $(LDFLAGS) $(addprefix $(PKG_BUILD_DIR)/, $(addsuffix .o, $(basename $1))) -o $2
+endef
+
+# Defaults
+define Build/Clean/Default
+	rm $(PKG_BUILD_DIR)/*.o
 endef
 
 # Targets

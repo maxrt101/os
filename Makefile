@@ -5,24 +5,20 @@
 # Used everywhere
 export TOPDIR       := $(shell pwd)
 export BINDIR       := $(TOPDIR)/bin
-export BUILDDIR     := $(TOPDIR)/build
-export LIBDIR       := $(BINDIR)/lib
 export INCLUDE_DIR  := $(TOPDIR)/include
+export BUILD_DIR    := $(TOPDIR)/build
+export ROOTFS_DIR   := $(BUILD_DIR)/root
+export HOST_DIR     := $(BINDIR)/host
+
 export MAKE_LEVEL   := 0
 
 # Aliases
-export COMMON       = $(TOPDIR)/include/common.mk
-export PACKAGE      = $(TOPDIR)/include/package.mk
+export COMMON       = $(INCLUDE_DIR)/common.mk
+export PACKAGE      = $(INCLUDE_DIR)/package.mk
 
+# Includes
 include $(COMMON)
-
-# Tools binaries
-export KFSCLI       := $(BINDIR)/host/kfscli
-
-# Output files
-BOOTSECTOR          := $(BINDIR)/$(CONFIG_BOOTSECTOR_FILE)
-BOOTLOADER          := $(BINDIR)/$(CONFIG_BOOTLOADER_FILE)
-TARGET              := $(BINDIR)/$(IMAGE_FILE)
+include $(INCLUDE_DIR)/image.mk
 
 $(info build target os:$(PROFILE))
 
@@ -30,11 +26,7 @@ $(info build target os:$(PROFILE))
 
 # @echo "make image $(TARGET)"
 image: build
-	$(call log,image)
-	$(KFSCLI) create $(TARGET)
-	$(KFSCLI) setname "$(IMAGE_NAME)" $(TARGET)
-	$(KFSCLI) boot $(BOOTSECTOR) $(TARGET)
-	$(KFSCLI) write $(BOOTLOADER) /boot $(TARGET)
+	$(call Image/Create/Default)
 
 build: prepare tools packages
 
@@ -48,8 +40,15 @@ packages: prepare
 
 prepare:
 	mkdir -p $(BINDIR)
-	mkdir -p $(LIBDIR)
-	mkdir -p $(BUILDDIR)
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/bin
+	mkdir -p $(BUILD_DIR)/include
+	mkdir -p $(BUILD_DIR)/lib
+	mkdir -p $(ROOTFS_DIR)
+	mkdir -p $(HOST_DIR)
+	mkdir -p $(HOST_DIR)/bin
+	mkdir -p $(HOST_DIR)/include
+	mkdir -p $(HOST_DIR)/lib
 
 menuconfig:
 	echo "Not implemanted yet"
@@ -63,15 +62,15 @@ tool:
 	make -C tools package PKG=$(TOOL)
 
 run:
-	@echo "Running image $(TARGET)"
-	qemu-system-x86_64 -drive format=raw,file=$(TARGET) -monitor stdio
+	@echo "Running image $(IMG_FILE)"
+	qemu-system-x86_64 -drive format=raw,file=$(IMG_FILE) -monitor stdio
 
 clean:
 	make -C tools clean
 	make -C package clean
 
 buildclean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILD_DIR)
 
 # Silent otput, if V is not defined
 $(V).SILENT:

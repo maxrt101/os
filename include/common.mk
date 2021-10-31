@@ -1,19 +1,13 @@
 # common.mk
 
-include $(TOPDIR)/.config
-
-IMAGE_NAME=$(CONFIG_IMAGE_NAME)
-PROFILE=$(CONFIG_PROFILE)
-CXXSTD=$(CONFIG_CXXSTD)
-
-ifeq ("$(PROFILE)","DEV")
-IMAGE_PREFIX=dev
+ifeq ("$(TOPDIR)","")
+	$(error This Makefile shouldn't be run directly)
 endif
 
-IMAGE_FILE=$(IMAGE_PREFIX)-termos.kfs
+include $(TOPDIR)/.config
 
 ifeq ("$(CONFIG_BUILD_DEBUG)","y")
-	BUILD_DEBUG=1
+BUILD_DEBUG=1
 endif
 
 ifeq ("$(BUILD_DEBUG)","1")

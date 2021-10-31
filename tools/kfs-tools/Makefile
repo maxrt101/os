@@ -6,15 +6,16 @@ PKG_VERSION   := 0.1
 include $(COMMON)
 include $(PACKAGE)
 
-TOOLSDIR  := $(BINDIR)/host
-TARGET    := $(TOOLSDIR)/kfscli
-CXXFLAGS	+= -I$(TOPDIR)/include
+TARGET    := $(PKG_BUILD_DIR)/kfscli
+CXXFLAGS	+= -I$(call pwd)/include
 SRC       := main.cc kfs.cc
-
-define Build/Prepare
-	mkdir -p $(TOOLSDIR)
-endef
 
 define Build/Compile
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+endef
+
+define Build/Install
+	$(call Install/Host/File,$(TARGET),$(HOST_DIR)/bin)
+	$(call Install/Host/Folder,include,include)
+	$(call Install/Folder,include,include)
 endef
