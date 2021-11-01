@@ -1,6 +1,6 @@
 # image.mk
 
-include $(COMMON)
+# include $(COMMON)
 
 ifeq ("$(CONFIG_IMAGE_NAME)","")
 IMAGE_NAME=$(CONFIG_IMAGE_NAME)
@@ -16,8 +16,8 @@ endif
 
 IMG_BOOTSECTOR := $(BINDIR)/$(CONFIG_BOOTSECTOR_FILE)
 IMG_BOOTLOADER := $(BINDIR)/$(CONFIG_BOOTLOADER_FILE)
-IMG_FILE       := $(IMAGE_PREFIX)-$(IMAGE_NAME).kfs
-IMG_TARGET     := $(BINDIR)/$(IMAGE_FILE)
+IMG_FILE_NAME  := $(IMAGE_PREFIX)-$(IMAGE_NAME).kfs
+IMG_FILE       := $(BINDIR)/$(IMG_FILE_NAME)
 
 KFSCLI=$(HOST_DIR)/bin/kfscli
 
@@ -34,5 +34,5 @@ define Image/Create
 endef
 
 define Image/Create/Default
-	$(call Image/Create,$(IMG_TARGET),$(IMG_NAME),$(IMG_BOOTSECTOR),$(IMG_BOOTLOADER))
+	$(call Image/Create,$(IMG_FILE),$(IMG_NAME),$(IMG_BOOTSECTOR),$(IMG_BOOTLOADER))
 endef

@@ -9,7 +9,8 @@ else
 include $(INCLUDE_DIR)/cross.mk
 endif
 
-export PKG_BUILD_DIR := $(BUILD_DIR)/$(PACKAGES_DIR)/$(PKG_NAME)
+export PKG_BUILD_DIR := $(BUILD_DIR)/pkg/$(PKG_NAME)
+export PKG_SRC_DIR   := $(TOPDIR)/$(PKG_DIR_NAME)/$(PKG_NAME)
 
 # Internal functions
 define Build/ExternalDependency

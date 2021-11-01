@@ -1,6 +1,6 @@
 export PACKAGES_DIR := $(shell pwd)
 
-include $(COMMON)
+# include $(COMMON)
 
 SUBDIRS := $(wildcard */)
 

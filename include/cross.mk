@@ -1,5 +1,7 @@
 # Cross Compilation
 
+include $(INCLUDE_DIR)/target.mk
+
 TOOLCHAIN_PREFIX=$(TARGET_PREFIX)-elf
 
 export CC           := $(TOOLCHAIN_PREFIX)-gcc

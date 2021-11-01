@@ -1,6 +1,6 @@
 # build.mk
 
-include $(COMMON)
+# include $(COMMON)
 
 PROFILE=$(CONFIG_PROFILE)
 
@@ -37,4 +37,8 @@ endef
 
 define Install/Host/Folder
 	cp -r $(1) $(HOST_DIR)/$(2)
+endef
+
+define Install/Binary/File
+	cp $(1) $(BINDIR)/$(2)
 endef

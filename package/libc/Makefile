@@ -8,7 +8,7 @@ include $(PACKAGE)
 
 TARGET              := $(PKG_BUILD_DIR)/libc.a
 
-export CXXFLAGS      += -I$(call pwd)/include
+export CFLAGS        += -I$(PKG_SRC_DIR)/include
 export COBJS         := int64.o string.o ctype.o
 export OBJS          := $(addprefix $(PKG_BUILD_DIR)/, $(COBJS))
 
@@ -19,7 +19,7 @@ define Build/Compile
 endef
 
 define Build/Install
-	$(call Install/Folder,include,include)
+	$(call Install/Folder,include,)
 	$(call Install/File,$(TARGET),lib)
 endef
 
