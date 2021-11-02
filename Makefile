@@ -18,10 +18,11 @@ export PACKAGE      = $(INCLUDE_DIR)/package.mk
 
 # Includes
 include $(COMMON)
+include $(INCLUDE_DIR)/build.mk
 include $(INCLUDE_DIR)/image.mk
 include $(INCLUDE_DIR)/target.mk
 
-$(info build target os:$(PROFILE))
+$(info build target profile $(PROFILE))
 
 .PHONY: prepare build image package tool run
 

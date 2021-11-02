@@ -1,7 +1,5 @@
 export PACKAGES_DIR := $(shell pwd)
 
-# include $(COMMON)
-
 SUBDIRS := $(wildcard */)
 
 .PHONY: all prepare $(SUBDIRS)

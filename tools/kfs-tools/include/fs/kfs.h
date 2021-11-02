@@ -4,11 +4,9 @@
 #include <stdint.h>
 
 /*
-0   -> 512 => boot sector
-512 -> 8K  => boot data (basically bootloader)
-8K  -> 9K  => disk metadata
-9K  -> 10K => root node
-10K -> END => free to use
+512 - boot sector
+meta data
+nodes
 */
 
 /*

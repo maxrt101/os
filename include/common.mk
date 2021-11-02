@@ -6,7 +6,7 @@ endif
 
 include $(TOPDIR)/.config
 
-ifeq ("$(CONFIG_BUILD_DEBUG)","y")
+ifeq ("$(CONFIG_BUILD_DEBUG)","1")
 BUILD_DEBUG=1
 endif
 

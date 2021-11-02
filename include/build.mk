@@ -1,8 +1,10 @@
 # build.mk
 
-# include $(COMMON)
-
+ifeq ("$(CONFIG_PROFILE)","")
+PROFILE=$(DEFAULT_PROFILE)
+else
 PROFILE=$(CONFIG_PROFILE)
+endif
 
 ifeq ("$(CONFIG_PROFILE)","dev")
 IMAGE_PREFIX=dev

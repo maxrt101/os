@@ -11,8 +11,9 @@ TARGET    := $(PKG_BUILD_DIR)/kfscli
 CXXFLAGS	+= -Iinclude
 SRC       := main.cc kfs.cc
 
+# $(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 define Build/Compile
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+	$(call Build/Compile/CPP,$(SRC),$(TARGET))
 endef
 
 define Build/Install

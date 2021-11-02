@@ -32,7 +32,7 @@ define Build/CheckIfBuilt
 		for file in $$1/*; do \
 			if [ -d $$file ]; then \
 				check $$file; \
-			else \
+			elif [ -f $$file ]; then \
 				if [[ ! $$file == *.built ]] && [ -f $(PKG_BUILD_DIR)/.built ]; then \
 					if [ "`date -r $$file +%s`" -gt "`cat $(PKG_BUILD_DIR)/.built`" ]; then \
 						rm $(PKG_BUILD_DIR)/.built; \
