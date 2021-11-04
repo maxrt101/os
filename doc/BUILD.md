@@ -19,8 +19,6 @@ PKG_VERSION   := 0.1  # package version
 include $(COMMON)  # common definitions, also includes .config
 include $(PACKAGE) # package structure definitions
 
-TARGET        := $(BINDIR)/test # target binary file
-
 define Build/Prepare
   # commands
 endef
@@ -52,11 +50,15 @@ PKG_VERSION   := 0.1
 include $(COMMON)
 include $(PACKAGE)
 
-TARGET        := $(BINDIR)/test
+TARGET        := test
 CSRC          := test.c main.c
 
 define Build/Compile
-  $(call Build/Compile/C, $(CSRC), $(TARGET))
+  $(call Build/Compile/C, $(CSRC), $(PKG_BUILD_DIR)/$(TARGET))
+endef
+
+define Build/Install
+  $(call Install/File, $(PKG_BUILD_DIR)/$(TARGET), $(TARGET))
 endef
 ```
 ### 3. Building
@@ -66,7 +68,9 @@ If you want to build specific package run `make package PKG=PACKAGE_NAME` from t
 ### 4. Useful Makefile Varibles
 `TOPDIR` - top directory  
 `BINDIR` - directory for binaries  
-`BUILDDIR` - directory for build files  
+`BUILD_DIR` - directory for build files  
+`HOST_DIR` - directory for host files (executables, libs, headers)  
+`ROOTFS_DIR` - directory that represents image file tree  
 `COMMON` - alias for `$(TOPDIR)/include/common.mk`  
 `PACKAGE` - alias for `$(TOPDIR)/include/package.mk`  
 `PKG_BUILDDIR` - build directory for package, present only if `PACKAGE` is included  

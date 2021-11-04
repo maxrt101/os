@@ -2,19 +2,22 @@
 
 PKG_NAME      := kfs_tools
 PKG_VERSION   := 0.1
+PKG_HOST      := 1
 
 include $(COMMON)
 include $(PACKAGE)
 
-TOOLSDIR  := $(BINDIR)/host
-TARGET    := $(TOOLSDIR)/kfscli
-CXXFLAGS	+= -I$(TOPDIR)/include
+TARGET    := $(PKG_BUILD_DIR)/kfscli
+CXXFLAGS	+= -Iinclude
 SRC       := main.cc kfs.cc
 
-define Build/Prepare
-	mkdir -p $(TOOLSDIR)
+# $(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+define Build/Compile
+	$(call Build/Compile/CPP,$(SRC),$(TARGET))
 endef
 
-define Build/Compile
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+define Build/Install
+	$(call Install/Host/File,$(TARGET),bin)
+	$(call Install/Host/Folder,include,)
+	$(call Install/Folder,include,)
 endef
