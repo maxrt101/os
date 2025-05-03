@@ -1,7 +1,9 @@
 #include <x86_64.h>
 #include <kernel.h>
 
+#ifndef STACK_TRACE_DEPTH_LIMIT
 #define STACK_TRACE_DEPTH_LIMIT 100
+#endif
 
 void x86_64_dump_irq_cpu_frame(x86_64_irq_frame_cpu_t * frame) {
   kprintf("RIP    %016p | RSP    %016p\n", frame->rip, frame->rsp);
@@ -26,10 +28,20 @@ void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame) {
 void x86_64_stack_trace(uint64_t rbp, uint64_t rip) {
   kprintf("Stack trace:\n");
   kprintf("Frame #0 - %p\n", rip);
+
   x86_64_stack_frame_t * frame = (x86_64_stack_frame_t *) rbp;
-  for (uint32_t f = 1; f <= STACK_TRACE_DEPTH_LIMIT && frame->rbp; ++f) {
+
+  uint32_t f;
+  for (f = 1; f <= STACK_TRACE_DEPTH_LIMIT && frame->rbp; ++f) {
     kprintf("Frame #%d - %p\n", f, frame->rip);
     frame = frame->rbp;
+  }
+
+  if (f == STACK_TRACE_DEPTH_LIMIT) {
+    kprintf("...\n");
+#if SHOW_TIPS
+    kprintf("Stack trace limit reached, recompile with STACK_TRACE_DEPTH_LIMIT changed\n");
+#endif
   }
 }
 

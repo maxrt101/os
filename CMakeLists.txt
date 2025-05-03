@@ -38,6 +38,7 @@ project_add_define(
 	"USE_WAIT_BEFORE_TRIGGERING_IRQ=0"
 
 	# Logs/Verbosity
+	"SHOW_TIPS=1"
 	"KPALLOC_VERBOSITY=1"
 )
 

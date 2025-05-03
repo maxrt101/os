@@ -71,6 +71,7 @@ static void irq_handler(x86_64_irq_handler_ctx_t * ctx) {
 
   if (handler) {
     handler(ctx);
+#if SHOW_TIPS
   } else {
     kprintf("Warning: IRQ #%d was triggered, but has no handler\n", ctx->irq);
 
@@ -81,6 +82,7 @@ static void irq_handler(x86_64_irq_handler_ctx_t * ctx) {
     x86_64_stack_trace(frame->rbp, frame->rip);
 
     kprintf("Resuming execution...\n");
+#endif
   }
 
   x86_64_irq_done(ctx->irq);

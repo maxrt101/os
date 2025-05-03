@@ -1,5 +1,6 @@
 #include <arch.h>
 #include <x86_64.h>
+#include <kernel.h>
 
 void arch_init(kernel_t * kernel) {
   x86_64_init_tss(kernel);
@@ -29,27 +30,6 @@ void arch_trigger_irq(uint32_t n) {
 #endif
 
   switch (n) {
-    case 0:  ARCH_ASM("int $0"); break;
-    case 1:  ARCH_ASM("int $1"); break;
-    case 2:  ARCH_ASM("int $2"); break;
-    case 3:  ARCH_ASM("int $3"); break;
-    case 4:  ARCH_ASM("int $4"); break;
-    case 5:  ARCH_ASM("int $5"); break;
-    case 6:  ARCH_ASM("int $6"); break;
-    case 7:  ARCH_ASM("int $7"); break;
-    case 8:  ARCH_ASM("int $8"); break;
-    case 9:  ARCH_ASM("int $9"); break;
-    case 10: ARCH_ASM("int $10"); break;
-    case 11: ARCH_ASM("int $11"); break;
-    case 12: ARCH_ASM("int $12"); break;
-    case 13: ARCH_ASM("int $13"); break;
-    case 14: ARCH_ASM("int $14"); break;
-    case 15: ARCH_ASM("int $15"); break;
-    case 16: ARCH_ASM("int $16"); break;
-    case 17: ARCH_ASM("int $17"); break;
-    case 18: ARCH_ASM("int $18"); break;
-    case 19: ARCH_ASM("int $19"); break;
-    case 20: ARCH_ASM("int $20"); break;
     case 32: ARCH_ASM("int $32"); break;
     case 33: ARCH_ASM("int $33"); break;
     case 34: ARCH_ASM("int $34"); break;
@@ -68,6 +48,9 @@ void arch_trigger_irq(uint32_t n) {
     case 47: ARCH_ASM("int $47"); break;
     case 48: ARCH_ASM("int $48"); break;
     default:
+#if SHOW_TIPS
+      kprintf("Unsupported IRQ for arch_trigger_irq (%d)\n", n);
+#endif
       break;
   }
 }
