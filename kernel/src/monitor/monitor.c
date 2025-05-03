@@ -54,6 +54,47 @@ void monitor_cmd_test(int argc, char ** argv) {
   kprintf("%8s\n", "abc");
 }
 
+__OPTIMIZE(0) void monitor_cmd_test2(int argc, char ** argv) {
+  if (argc != 2) {
+    kprintf("Usage: test2 N\nWhere N = [1, 3]\n");
+    return;
+  }
+
+  int n = atoi(argv[1], 10);
+
+  void * jump = NULL;
+
+  switch (n) {
+    case 0:
+case0:
+      kprintf("case 0\n");
+      return;
+
+    case 1:
+      jump = &&case0;
+      break;
+case1:
+      kprintf("case 1\n");
+      return;
+
+    case 2:
+      jump = &&case1;
+      break;
+case2:
+      kprintf("case 2\n");
+      return;
+
+    case 3:
+      jump = &&case2;
+      break;
+
+    default:
+      return;
+  }
+
+  goto * jump;
+}
+
 void monitor_cmd_panic(int argc, char ** argv) {
   if (argc == 1) {
     kpanic("Manually triggered");
@@ -157,6 +198,7 @@ static struct {
   void (*handler)(int, char **);
 } commands[] = {
   {"test", monitor_cmd_test},
+  {"test2", monitor_cmd_test2},
   {"panic", monitor_cmd_panic},
   {"int", monitor_cmd_int},
   {"div0", monitor_cmd_div0},
