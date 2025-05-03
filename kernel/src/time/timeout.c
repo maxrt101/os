@@ -1,7 +1,6 @@
 #include <time/timeout.h>
 #include <time/time.h>
 #include <util/assert.h>
-// #include <arch.h>
 
 void timeout_init(timeout_t * timeout, time_t duration) {
   ASSERT_RETURN(timeout);

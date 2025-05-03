@@ -1,6 +1,5 @@
 #include <x86_64.h>
-
-#include "kernel.h"
+#include <kernel.h>
 
 typedef void (*x86_64_irq_handler_t)(void *);
 
