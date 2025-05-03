@@ -31,7 +31,7 @@ typedef LOCK_TYPE lock_t;
 
 #define lock_trylock(__lock)                        \
     ((LOCK_GET(__lock) == LOCK_RELEASED)            \
-      ? LOCK_UPDATE(__lock, LOCK_LOCKED), true      \
+      ? ((LOCK_UPDATE(__lock, LOCK_LOCKED)), true)  \
       : false)
 
 #define lock_waitlock(__lock)                       \

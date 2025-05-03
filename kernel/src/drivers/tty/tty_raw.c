@@ -54,6 +54,9 @@ __STATIC_INLINE void tty_raw_putc(tty_raw_t * tty, char ch) {
   }
 
   if (ch == '\b') {
+    // FIXME: tty_raw_backspace calls tty_raw_putc, not releasing would result in deadlock
+    //        good thing that double-unlock error is not a thing :)
+    lock_release(tty->lock);
     tty_raw_backspace(tty);
     goto exit;
   }
