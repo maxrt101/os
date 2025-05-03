@@ -1,5 +1,6 @@
 #include <drivers/keyboard/keyboard.h>
 #include <monitor/monitor.h>
+#include <event/event.h>
 #include <util/util.h>
 #include <kernel.h>
 #include <arch.h>
@@ -8,8 +9,15 @@
 
 kernel_t kernel;
 
+static event_ctx_t kernel_event_sys_timer;
+
+__STATIC_INLINE void kinit_events(kernel_t * kernel) {
+  event_register(KERNEL_EVENT_SYS_TIMER, &kernel_event_sys_timer);
+}
+
 void kinit(kernel_t * kernel) {
   arch_disable_interrupts();
+  kinit_events(kernel);
   kinit_port(kernel);
   kinit_io(kernel);
   kprintf("Initializing kernel\n");

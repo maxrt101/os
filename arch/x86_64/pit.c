@@ -1,4 +1,6 @@
 #include <x86_64.h>
+#include <event/event.h>
+#include <kernel.h>
 
 /** PIT OCW bit masks */
 #define PIT_OCW_MASK_BINCOUNT       1
@@ -26,6 +28,8 @@ static volatile uint64_t tick_counter = 0;
 
 void x86_64_pit_irq_handler(void * ctx) {
   tick_counter++;
+
+  event_dispatch(KERNEL_EVENT_SYS_TIMER);
 }
 
 __STATIC_INLINE void pit_send_cmd(uint8_t cmd) {

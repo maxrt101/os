@@ -7,6 +7,11 @@
 #include <arch.h>
 #include <stdarg.h>
 
+enum kernel_events_e {
+  KERNEL_EVENT_RESERVED = 0,
+  KERNEL_EVENT_SYS_TIMER
+};
+
 typedef struct kernel_t {
   arch_ctx_t    arch;
 
