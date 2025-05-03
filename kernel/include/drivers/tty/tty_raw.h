@@ -1,16 +1,28 @@
 #pragma once
 
 #include <drivers/video/framebuffer.h>
-#include <stddef.h>
+#include <time/timeout.h>
+#include <util/lock.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef struct {
   framebuffer_t * fb;
+
   font_t * font;
+
   color_t bg;
   color_t fg;
+
   position_t cursor;
   position_t saved_cursor;
+
+  lock_t lock;
+
+  struct {
+    timeout_t timeout;
+    bool state;
+  } blink;
 } tty_raw_t;
 
 void tty_raw_init(tty_raw_t * tty, framebuffer_t * fb, font_t * font);

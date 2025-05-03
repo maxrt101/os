@@ -1,11 +1,17 @@
 #include <drivers/tty/tty_raw.h>
 #include <drivers/tty/ansi.h>
 #include <drivers/keyboard/keyboard.h>
+#include <event/event.h>
 #include <util/assert.h>
 #include <util/util.h>
+#include <kernel.h>
 #include <limits.h>
 
 #define TAB_WIDTH_CHARS 8
+
+#if USE_TIMER_FOR_CURSOR_BLINK
+static evnet_handler_t tty_raw_sys_timer_event;
+#endif
 
 __STATIC_INLINE void tty_raw_putc(tty_raw_t * tty, char ch);
 
@@ -32,6 +38,8 @@ __STATIC_INLINE void tty_raw_backspace(tty_raw_t * tty) {
 }
 
 __STATIC_INLINE void tty_raw_putc(tty_raw_t * tty, char ch) {
+  lock_waitlock(tty->lock);
+
   if (tty->cursor.y >= tty->fb->size.height) {
     tty->cursor.y = 0;
     tty->cursor.x = 0;
@@ -42,22 +50,22 @@ __STATIC_INLINE void tty_raw_putc(tty_raw_t * tty, char ch) {
     if (cols % TAB_WIDTH_CHARS != 0) {
       tty->cursor.x += (TAB_WIDTH_CHARS - (cols % TAB_WIDTH_CHARS)) * font_get_glyph_width(tty->font);
     }
-    return;
+    goto exit;
   }
 
   if (ch == '\b') {
     tty_raw_backspace(tty);
-    return;
+    goto exit;
   }
 
   if (ch == '\r') {
     tty->cursor.x = 0;
-    return;
+    goto exit;
   }
 
   if (ch == '\n') {
     tty_raw_new_line(tty);
-    return;
+    goto exit;
   }
 
   framebuffer_draw_char(
@@ -73,6 +81,31 @@ __STATIC_INLINE void tty_raw_putc(tty_raw_t * tty, char ch) {
 
   if (tty->cursor.x >= tty->fb->size.width) {
     tty_raw_new_line(tty);
+  }
+
+exit:
+  lock_release(tty->lock);
+}
+
+__STATIC_INLINE void tty_raw_draw_cursor(tty_raw_t * tty, bool state) {
+  size_t char_width = font_get_glyph_width(tty->font);
+  size_t char_height = font_get_glyph_height(tty->font);
+
+  for (size_t y = 1; y < char_height - 1; ++y) {
+    for (size_t x = 1; x < char_width - 1; ++x) {
+      framebuffer_draw_pixel(tty->fb, (position_t){tty->cursor.x + x, tty->cursor.y + y}, state ? tty->fg : tty->bg);
+    }
+  }
+}
+
+__STATIC_INLINE void tty_raw_update_cursor(tty_raw_t * tty) {
+  if (timeout_is_expired(&tty->blink.timeout) && lock_trylock(tty->lock)) {
+    tty_raw_draw_cursor(tty, tty->blink.state);
+    tty->blink.state = !tty->blink.state;
+
+    timeout_restart(&tty->blink.timeout);
+
+    lock_release(tty->lock);
   }
 }
 
@@ -155,6 +188,21 @@ void tty_raw_handle_ansi_esc_seq(ansi_esc_seq_t * seq, void * ctx) {
   }
 }
 
+#if USE_TIMER_FOR_CURSOR_BLINK
+void tty_raw_sys_timer_event_handler(void * ctx) {
+  tty_raw_t * tty = ctx;
+
+  if (timeout_is_expired(&tty->blink.timeout) && lock_trylock(tty->lock)) {
+    tty_raw_draw_cursor(tty, tty->blink.state);
+    tty->blink.state = !tty->blink.state;
+
+    timeout_restart(&tty->blink.timeout);
+
+    lock_release(tty->lock);
+  }
+}
+#endif
+
 void tty_raw_init(tty_raw_t * tty, framebuffer_t * fb, font_t * font) {
   ASSERT_RETURN(tty && fb && font);
 
@@ -164,6 +212,18 @@ void tty_raw_init(tty_raw_t * tty, framebuffer_t * fb, font_t * font) {
   tty->bg = (color_t){0, 0, 0};
   tty->cursor.x = 0;
   tty->cursor.y = 0;
+  tty->blink.state = false;
+
+  lock_init(tty->lock);
+
+  timeout_init(&tty->blink.timeout, time_milliseconds(500));
+
+#if USE_TIMER_FOR_CURSOR_BLINK
+  tty_raw_sys_timer_event.fn  = tty_raw_sys_timer_event_handler;
+  tty_raw_sys_timer_event.ctx = tty;
+
+  event_subscribe(KERNEL_EVENT_SYS_TIMER, &tty_raw_sys_timer_event);
+#endif
 }
 
 void tty_raw_print(tty_raw_t * tty, const char * buf) {
@@ -189,11 +249,12 @@ void tty_raw_getline(tty_raw_t * tty, char * buf, size_t max) {
   size_t size = 0;
 
   while (size < max) {
-    key_t key = key_wait();
+    key_t key = key_get();
 
     char c = key_to_char(key);
 
     if (key.scancode != KEY_SCANCODE_NONE && c != 0) {
+      tty_raw_draw_cursor(tty, false);
       tty_raw_putc(tty, c);
 
       if (c == '\n') {
@@ -210,6 +271,7 @@ void tty_raw_getline(tty_raw_t * tty, char * buf, size_t max) {
       size++;
     }
 
+    tty_raw_update_cursor(tty);
   }
 
   buf[size] = '\0';
@@ -218,12 +280,16 @@ void tty_raw_getline(tty_raw_t * tty, char * buf, size_t max) {
 bool tty_raw_getline_async(tty_raw_t * tty, char * buf, size_t max, size_t * index) {
   ASSERT_RETURN(tty && buf && max && index, false);
 
+  tty_raw_update_cursor(tty);
+
   if (*index < max) {
     key_t key = key_get();
 
     char c = key_to_char(key);
 
     if (key.scancode != KEY_SCANCODE_NONE && c != 0) {
+      tty_raw_draw_cursor(tty, false);
+
       if (c == '\n') {
         tty_raw_putc(tty, c);
         buf[*index] = '\0';
