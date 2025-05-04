@@ -5,37 +5,13 @@
 #define STACK_TRACE_DEPTH_LIMIT 100
 #endif
 
-#if 0
-void x86_64_dump_irq_cpu_frame(x86_64_irq_frame_cpu_t * frame) {
-  kprintf("RIP    %016p | RSP    %016p\n", frame->rip, frame->rsp);
-  kprintf("CS     %016p | SS     %016p\n", frame->cs, frame->ss);
-  kprintf("RFLAGS %016p\n", frame->rflags);
-}
-
-void x86_64_dump_irq_exc_cpu_frame(x86_64_irq_exc_frame_cpu_t * frame) {
-  kprintf("RSP    %016p | RFLAGS %016p\n", frame->rsp, frame->rflags);
-  kprintf("CS     %016p | SS     %016p\n", frame->cs, frame->ss);
-}
-
-void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame) {
-  kprintf("R8     %016p | R9     %016p\n", frame->r8, frame->r9);
-  kprintf("R10    %016p | R11    %016p\n", frame->r10, frame->r11);
-  // kprintf("RIP    %016p | RBP    %016p\n", frame->rip, frame->rbp);
-  kprintf("RIP    %016p | RBP    %016p\n", frame->irq.rip, frame->irq.rbp);
-  kprintf("RDI    %016p | RSI    %016p\n", frame->rdi, frame->rsi);
-  kprintf("RAX    %016p | RCX    %016p\n", frame->rax, frame->rcx);
-  kprintf("RDX    %016p\n", frame->rdx);
-}
-#endif
-
 void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame) {
   kprintf("RIP    %016p | RSP    %016p\n", frame->cpu.rip, frame->cpu.rsp);
-  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs, frame->cpu.ss);
-  kprintf("RFLAGS %016p\n", frame->cpu.rflags);
+  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs,  frame->cpu.ss);
+  kprintf("RBP    %016p | RFLAGS %016p\n", frame->rbp,     frame->cpu.rflags);
 
-  kprintf("R8     %016p | R9     %016p\n", frame->r8, frame->r9);
+  kprintf("R8     %016p | R9     %016p\n", frame->r8,  frame->r9);
   kprintf("R10    %016p | R11    %016p\n", frame->r10, frame->r11);
-  kprintf("RIP    %016p | RBP    %016p\n", frame->cpu.rip, frame->rbp);
   kprintf("RDI    %016p | RSI    %016p\n", frame->rdi, frame->rsi);
   kprintf("RAX    %016p | RCX    %016p\n", frame->rax, frame->rcx);
   kprintf("RDX    %016p\n", frame->rdx);
@@ -43,9 +19,9 @@ void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame) {
 
 void x86_64_dump_irq_exc_frame(x86_64_irq_exc_frame_t * frame) {
   kprintf("RSP    %016p | RFLAGS %016p\n", frame->cpu.rsp, frame->cpu.rflags);
-  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs, frame->cpu.ss);
+  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs,  frame->cpu.ss);
 
-  kprintf("R8     %016p | R9     %016p\n", frame->r8, frame->r9);
+  kprintf("R8     %016p | R9     %016p\n", frame->r8,  frame->r9);
   kprintf("R10    %016p | R11    %016p\n", frame->r10, frame->r11);
   kprintf("RIP    %016p | RBP    %016p\n", frame->rip, frame->rbp);
   kprintf("RDI    %016p | RSI    %016p\n", frame->rdi, frame->rsi);
