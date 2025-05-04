@@ -32,6 +32,35 @@ typedef __PACKED_STRUCT x86_64_stack_frame_t {
 } x86_64_stack_frame_t;
 
 typedef __PACKED_STRUCT {
+  uint64_t rip;
+  uint64_t cs;
+  uint64_t rflags;
+  uint64_t rsp;
+  uint64_t ss;
+} x86_64_irq_frame_cpu_t;
+
+typedef __PACKED_STRUCT {
+  uint64_t rax;
+  uint64_t rdx;
+  uint64_t rcx;
+  uint64_t rsi;
+  uint64_t rdi;
+  uint64_t r8;
+  uint64_t r9;
+  uint64_t r10;
+  uint64_t r11;
+  uint64_t rbp;
+  x86_64_irq_frame_cpu_t cpu;
+} x86_64_irq_frame_t;
+
+typedef __PACKED_STRUCT {
+  uint64_t cs;
+  uint64_t rflags;
+  uint64_t rsp;
+  uint64_t ss;
+} x86_64_irq_exc_frame_cpu_t;
+
+typedef __PACKED_STRUCT {
   uint64_t rax;
   uint64_t rdx;
   uint64_t rcx;
@@ -43,22 +72,8 @@ typedef __PACKED_STRUCT {
   uint64_t r11;
   uint64_t rbp;
   uint64_t rip;
-} x86_64_irq_frame_t;
-
-typedef __PACKED_STRUCT {
-  uint64_t rip;
-  uint64_t cs;
-  uint64_t rflags;
-  uint64_t rsp;
-  uint64_t ss;
-} x86_64_irq_frame_cpu_t;
-
-typedef __PACKED_STRUCT {
-  uint64_t cs;
-  uint64_t rflags;
-  uint64_t rsp;
-  uint64_t ss;
-} x86_64_irq_exc_frame_cpu_t;
+  x86_64_irq_exc_frame_cpu_t cpu;
+} x86_64_irq_exc_frame_t;
 
 typedef struct {
   x86_64_irq_frame_cpu_t * cpu_frame;
@@ -117,7 +132,6 @@ void x86_64_irq_done(uint64_t n);
 
 const char * x86_64_get_exc_name(uint64_t exc);
 
-void x86_64_dump_irq_cpu_frame(x86_64_irq_frame_cpu_t * frame);
-void x86_64_dump_irq_exc_cpu_frame(x86_64_irq_exc_frame_cpu_t * frame);
 void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame);
+void x86_64_dump_irq_exc_frame(x86_64_irq_exc_frame_t * frame);
 void x86_64_stack_trace(uint64_t rbp, uint64_t rip);

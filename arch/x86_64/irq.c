@@ -45,16 +45,15 @@ typedef void (*x86_64_irq_handler_t)(void *);
 #define IRQ_REGISTER(__idt, __n, ...) \
   x86_64_idt_set_handler(__idt, __n, UTIL_IF_EMPTY(__VA_ARGS__, IRQ_TYPE_INTERRUPT, __VA_ARGS__), (void *) IRQ_NAME(__n));
 
-#define GET_IRQ_FRAME(__name, __rsp, __cpu_frame_type) \
-  x86_64_irq_frame_t * __name = (x86_64_irq_frame_t *) (__rsp - sizeof(x86_64_irq_frame_t) - sizeof(__cpu_frame_type));
+#define GET_IRQ_FRAME(__type, __name, __rsp) \
+  __type * __name = (__type *) (__rsp - sizeof(__type));
 
 static void exception_handler(x86_64_irq_exc_handler_ctx_t * ctx) {
   kprintf("\nException: %s (error_code=%d)\n", x86_64_get_exc_name(ctx->irq), ctx->error_code);
 
-  GET_IRQ_FRAME(frame, ctx->cpu_frame->rsp, x86_64_irq_exc_frame_cpu_t);
+  GET_IRQ_FRAME(x86_64_irq_exc_frame_t, frame, ctx->cpu_frame->rsp);
 
-  x86_64_dump_irq_exc_cpu_frame(ctx->cpu_frame);
-  x86_64_dump_irq_frame(frame);
+  x86_64_dump_irq_exc_frame(frame);
   x86_64_stack_trace(frame->rbp, frame->rip);
 
   kprintf("Aborting now...\n");
@@ -75,11 +74,10 @@ static void irq_handler(x86_64_irq_handler_ctx_t * ctx) {
   } else {
     kprintf("Warning: IRQ #%d was triggered, but has no handler\n", ctx->irq);
 
-    GET_IRQ_FRAME(frame, ctx->cpu_frame->rsp, x86_64_irq_frame_cpu_t);
+    GET_IRQ_FRAME(x86_64_irq_frame_t, frame, ctx->cpu_frame->rsp);
 
-    x86_64_dump_irq_cpu_frame(ctx->cpu_frame);
     x86_64_dump_irq_frame(frame);
-    x86_64_stack_trace(frame->rbp, frame->rip);
+    x86_64_stack_trace(frame->rbp, frame->cpu.rip);
 
     kprintf("Resuming execution...\n");
 #endif
@@ -88,6 +86,7 @@ static void irq_handler(x86_64_irq_handler_ctx_t * ctx) {
   x86_64_irq_done(ctx->irq);
 }
 
+// Exceptions
 IRQ_EXC_DEF(0);
 IRQ_EXC_DEF(1);
 IRQ_EXC_DEF(2);
@@ -109,6 +108,7 @@ IRQ_EXC_DEF(17, HAS_ERROR_CODE);
 IRQ_EXC_DEF(18);
 IRQ_EXC_DEF(19);
 
+// Hardware IRQ (PIC)
 IRQ_DEF(32);
 IRQ_DEF(33);
 IRQ_DEF(34);
@@ -136,6 +136,7 @@ void x86_64_irq_register_handler(uint32_t irq, void * handler) {
 void x86_64_init_irq(kernel_t * kernel, void * idt, size_t irq_count) {
   kernel->arch.irq = (void *) (kpalloc(1) + kernel->hhdm.offset);
 
+  // Exceptions
   IRQ_EXC_REGISTER(idt, 0);
   IRQ_EXC_REGISTER(idt, 1);
   IRQ_EXC_REGISTER(idt, 2);
@@ -157,6 +158,7 @@ void x86_64_init_irq(kernel_t * kernel, void * idt, size_t irq_count) {
   IRQ_EXC_REGISTER(idt, 18);
   IRQ_EXC_REGISTER(idt, 19);
 
+  // Hardware IRQ (PIC)
   IRQ_REGISTER(idt, 32);
   IRQ_REGISTER(idt, 33);
   IRQ_REGISTER(idt, 34);
