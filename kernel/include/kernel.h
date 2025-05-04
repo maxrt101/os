@@ -1,7 +1,7 @@
 #pragma once
 
 #include <drivers/video/framebuffer.h>
-#include <drivers/tty/tty_raw.h>
+#include <drivers/tty/tty.h>
 #include <memory/memmap.h>
 #include <memory/physmem.h>
 #include <arch.h>
@@ -16,7 +16,7 @@ typedef struct kernel_t {
   arch_ctx_t    arch;
 
   framebuffer_t framebuffer;
-  tty_raw_t     tty_raw;
+  tty_t         tty;
 
   memmap_t      memmap;
   kpalloc_t     kpalloc;

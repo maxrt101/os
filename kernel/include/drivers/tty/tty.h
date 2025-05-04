@@ -23,10 +23,10 @@ typedef struct {
     timeout_t timeout;
     bool state;
   } blink;
-} tty_raw_t;
+} tty_t;
 
-void tty_raw_init(tty_raw_t * tty, framebuffer_t * fb, font_t * font);
-void tty_raw_print(tty_raw_t * tty, const char * buf);
-char tty_raw_getch(tty_raw_t * tty);
-void tty_raw_getline(tty_raw_t * tty, char * buf, size_t max);
-bool tty_raw_getline_async(tty_raw_t * tty, char * buf, size_t max, size_t * index);
+void tty_init(tty_t * tty, framebuffer_t * fb, font_t * font);
+void tty_print(tty_t * tty, const char * buf);
+char tty_getch(tty_t * tty);
+void tty_getline(tty_t * tty, char * buf, size_t max);
+bool tty_getline_async(tty_t * tty, char * buf, size_t max, size_t * index);

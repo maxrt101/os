@@ -236,7 +236,7 @@ __STATIC_INLINE void monitor_run_cmd(char * buf) {
 }
 
 void monitor_main() {
-  int stat_x = kernel.tty_raw.fb->size.width / font_get_glyph_width(kernel.tty_raw.font) - 20;
+  int stat_x = kernel.tty.fb->size.width / font_get_glyph_width(kernel.tty.font) - 20;
 
   int cycle = 0;
   char buf[32] = {0};

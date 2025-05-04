@@ -320,13 +320,13 @@ font_t font_8x16_sweet16 = {
 };
 
 void kinit_io(kernel_t * kernel) {
-  tty_raw_init(&kernel->tty_raw, &kernel->framebuffer, &font_8x16_sweet16);
+  tty_init(&kernel->tty, &kernel->framebuffer, &font_8x16_sweet16);
 }
 
 void vkprintf(const char * fmt, va_list args) {
   static char buffer[512];
   if (vsnprintf(buffer, sizeof(buffer), fmt, args)) {
-    tty_raw_print(&kernel.tty_raw, buffer);
+    tty_print(&kernel.tty, buffer);
   }
 }
 
@@ -338,13 +338,13 @@ void kprintf(const char * fmt, ...) {
 }
 
 char kgetch() {
-  return tty_raw_getch(&kernel.tty_raw);
+  return tty_getch(&kernel.tty);
 }
 
 void kgetline(char * buf, size_t buf_size) {
-  tty_raw_getline(&kernel.tty_raw, buf, buf_size);
+  tty_getline(&kernel.tty, buf, buf_size);
 }
 
 bool kgetline_async(char * buf, size_t buf_size, size_t * index) {
-  return tty_raw_getline_async(&kernel.tty_raw, buf, buf_size, index);
+  return tty_getline_async(&kernel.tty, buf, buf_size, index);
 }
