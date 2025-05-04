@@ -27,7 +27,7 @@ typedef void (*x86_64_irq_handler_t)(void *);
   }
 
 #define IRQ_EXC_DEF(__n, ...)                                     \
-  IRQ_SIGNATURE(__n, __has_code)                                  \
+  IRQ_SIGNATURE(__n, __VA_ARGS__)                                 \
   IRQ_EXC_BODY(__n, UTIL_IF_1(__VA_ARGS__, code, 0))
 
 #define IRQ_DEF(__n)                                              \
