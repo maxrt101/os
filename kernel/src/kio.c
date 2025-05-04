@@ -1,6 +1,8 @@
 #include <kernel.h>
 #include <util/string.h>
 
+#define FB_TEST_HALF 0
+
 uint8_t font_8x16_sweet16_data[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -319,8 +321,18 @@ font_t font_8x16_sweet16 = {
   .range.to = 0x17f
 };
 
+#if FB_TEST_HALF
+framebuffer_t fb_half;
+#endif
+
 void kinit_io(kernel_t * kernel) {
+#if FB_TEST_HALF
+  memcpy(&fb_half, &kernel->framebuffer, sizeof(fb_half));
+  fb_half.size.width /= 2;
+  tty_init(&kernel->tty, &fb_half, &font_8x16_sweet16);
+#else
   tty_init(&kernel->tty, &kernel->framebuffer, &font_8x16_sweet16);
+#endif
 }
 
 void vkprintf(const char * fmt, va_list args) {
