@@ -16,6 +16,7 @@ typedef struct kernel_t kernel_t;
 
 void arch_init(kernel_t * kernel);
 void arch_abort(void);
+void arch_stacktrace(void);
 
 uint64_t arch_get_tick(void);
 uint64_t arch_get_tick_duration_hz(void);

@@ -97,9 +97,9 @@ case2:
 
 void monitor_cmd_panic(int argc, char ** argv) {
   if (argc == 1) {
-    kpanic("Manually triggered");
+    kpanic("Manually triggered\n");
   } else {
-    kpanic("%s", argv[1]);
+    kpanic("%s\n", argv[1]);
   }
 }
 

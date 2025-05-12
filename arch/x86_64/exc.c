@@ -73,3 +73,18 @@ const char * x86_64_get_exc_name(uint64_t exc) {
     default: return "Unknown";
   }
 }
+
+void arch_stacktrace(void) {
+  uint64_t rbp, rip;
+  ARCH_ASM(
+    "mov %%rbp, %0  \n"
+    "call next      \n" // A trick to get RIP: a call will push RIP onto the stack
+    "next:          \n"
+    "pop %%rax      \n"
+    "mov %%rax, %1  \n"
+    : "=m"(rbp), "=m"(rip)
+    :
+    : "rax"
+  );
+  x86_64_stack_trace(rbp, rip);
+}

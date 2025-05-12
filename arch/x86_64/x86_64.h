@@ -31,6 +31,8 @@ typedef __PACKED_STRUCT x86_64_stack_frame_t {
   uint64_t rip;
 } x86_64_stack_frame_t;
 
+// TODO: Make one x86_64_irq_frame_t, just calculate offsets differently in exc_handler and irq_handler
+
 typedef __PACKED_STRUCT {
   uint64_t rip;
   uint64_t cs;
@@ -53,6 +55,11 @@ typedef __PACKED_STRUCT {
   x86_64_irq_frame_cpu_t cpu;
 } x86_64_irq_frame_t;
 
+typedef struct {
+  x86_64_irq_frame_cpu_t * cpu_frame;
+  uint64_t irq;
+} x86_64_irq_handler_ctx_t;
+
 typedef __PACKED_STRUCT {
   uint64_t cs;
   uint64_t rflags;
@@ -74,11 +81,6 @@ typedef __PACKED_STRUCT {
   uint64_t rip;
   x86_64_irq_exc_frame_cpu_t cpu;
 } x86_64_irq_exc_frame_t;
-
-typedef struct {
-  x86_64_irq_frame_cpu_t * cpu_frame;
-  uint64_t irq;
-} x86_64_irq_handler_ctx_t;
 
 typedef struct {
   x86_64_irq_exc_frame_cpu_t * cpu_frame;

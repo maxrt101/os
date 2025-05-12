@@ -6,5 +6,6 @@ void kpanic(const char * fmt, ...) {
   va_start(args, fmt);
   vkprintf(fmt, args);
   va_end(args);
+  arch_stacktrace();
   arch_abort();
 }
