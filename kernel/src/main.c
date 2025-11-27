@@ -9,24 +9,60 @@
 
 #define FB_TEST 0
 
+const char* intro_art[] = {
+  "                                       )                       \n",
+  "                            )      ((     (                    \n",
+  "                           (        ))     )                   \n",
+  "                    )       )      //     (                    \n",
+  "               _   (        __    (     ~->>                   \n",
+  "        ,-----' |__,_~~___<'__`)-~__--__-~->> <                \n",
+  "        | //  : | -__   ~__ o)____)),__ - '> >-  >             \n",
+  "        | //  : |- \\_ \\ -\\_\\ -\\ \\ \\ ~\\_  \\ ->> - ,  >>\n",
+  "        | //  : |_~_\\ -\\__\\ \\~'\\ \\ \\, \\__ . -<-  >>    \n",
+  "        `-----._| `  -__`-- - ~~ -- ` --~> >                   \n",
+  "         _/___\\_    //)_`//  | ||]                            \n",
+  "   _____[_______]_[~~-_ (.L_/  ||                              \n",
+  "  [____________________]' `\\_,/'/                             \n",
+  "    ||| /          |||  ,___,'./                               \n",
+  "    ||| \\          |||,'______|                               \n",
+  "    ||| /          /|| I==||                                   \n",
+  "    ||| \\       __/_||  __||__                                \n",
+  "-----||-/------`-._/||-o--o---o---                             \n",
+  "  ~~~~~'                                                       \n"
+};
+
 kernel_t kernel;
 
 static event_ctx_t kernel_event_sys_timer;
 
-__STATIC_INLINE void kinit_events(kernel_t * kernel) {
+__STATIC_INLINE void kernel_init_events(kernel_t * kernel) {
   event_register(KERNEL_EVENT_SYS_TIMER, &kernel_event_sys_timer);
 }
 
-void kinit(kernel_t * kernel) {
+__STATIC_INLINE void print_intro_art(void) {
+  kprintf("OS with no name - v0.1\n");
+  for (int i = 0; i < UTIL_ARR_SIZE(intro_art); ++i) {
+    kprintf("%s", intro_art[i]);
+  }
+  kprintf("\n");
+}
+
+void kernel_init(kernel_t * kernel) {
   arch_disable_interrupts();
-  kinit_events(kernel);
-  kinit_port(kernel);
-  kinit_io(kernel);
+
+  kernel_init_events(kernel);
+  kernel_init_port(kernel);
+  kernel_init_io(kernel);
+
+  print_intro_art();
+
   kprintf("Initializing kernel\n");
-  memmap_dump(&kernel->memmap);
-  kernel_phys_map(&kernel->memmap);
+
+  memmap_dump(&kernel->mem.map);
+  kernel_phys_map(&kernel->mem.map);
   arch_init(kernel);
-  // kernel_virt_map();
+  kernel_virt_map();
+
   arch_enable_interrupts();
 }
 
@@ -39,13 +75,12 @@ void fb_test() {
 }
 #endif
 
-int kmain(void) {
-  kinit(&kernel);
+int kernel_main(void) {
+  kernel_init(&kernel);
 
   UTIL_IF_1(FB_TEST, fb_test());
 
   kprintf("Kernel initialized\n");
-  kprintf("Kernel HHDM offset: %p\n", kernel.hhdm.offset);
 
   monitor_main();
 

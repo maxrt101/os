@@ -28,6 +28,12 @@ static volatile struct limine_hhdm_request hhdm_request = {
   .revision = 0
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_kernel_address_request kernel_address_request = {
+  .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+  .revision = 0
+};
+
 __attribute__((used, section(".limine_requests_start")))
 static volatile LIMINE_REQUESTS_START_MARKER;
 
@@ -50,7 +56,7 @@ __STATIC_INLINE memreg_type_t limine_memmap_entry_type_to_memreg_type(uint64_t t
 
 static memreg_t memory_regions[MEMREG_MAX];
 
-void kinit_port(kernel_t * kernel) {
+void kernel_init_port(kernel_t * kernel) {
   if (LIMINE_BASE_REVISION_SUPPORTED == false) {
     arch_abort();
   }
@@ -59,16 +65,23 @@ void kinit_port(kernel_t * kernel) {
     arch_abort();
   }
 
-  kernel->hhdm.offset = hhdm_request.response->offset;
+  kernel->mem.hhdm = hhdm_request.response->offset;
+
+  if (kernel_address_request.response == NULL) {
+    arch_abort();
+  }
+
+  kernel->mem.kernel_phys_base = kernel_address_request.response->physical_base;
+  kernel->mem.kernel_virt_base = kernel_address_request.response->virtual_base;
 
   if (memmap_request.response == NULL || memmap_request.response->entry_count < 1) {
     arch_abort();
   }
 
-  kernel->memmap.count = memmap_request.response->entry_count;
-  kernel->memmap.regions = memory_regions;
+  kernel->mem.map.count = memmap_request.response->entry_count;
+  kernel->mem.map.regions = memory_regions;
 
-  for (size_t i = 0; i < kernel->memmap.count; ++i) {
+  for (size_t i = 0; i < kernel->mem.map.count; ++i) {
     memory_regions[i].base = memmap_request.response->entries[i]->base;
     memory_regions[i].size = memmap_request.response->entries[i]->length;
     memory_regions[i].type = limine_memmap_entry_type_to_memreg_type(memmap_request.response->entries[i]->type);

@@ -28,10 +28,39 @@ __STATIC_INLINE void kernel_phys_block_remove(kernel_phys_block_t ** root, kerne
   *root = block->prev;
 }
 
+__STATIC_INLINE void phys_map_region(uint64_t base, uint64_t size) {
+  // Align the base and size to page boundaries
+  uint64_t aligned_base = PAGE_ALIGN_UP(base);
+  uint64_t aligned_size = PAGE_ALIGN_DOWN(size);
+  size_t pages = aligned_size / PAGE_SIZE;
+
+  if (pages == 0) return;
+
+  // Calculate the Virtual Address (HHDM)
+  kernel_phys_block_t * new_block = (kernel_phys_block_t *)(aligned_base + kernel.mem.hhdm);
+
+  // If root exists, insert. If root is NULL, initialize it.
+  if (kernel.mem.phys.root) {
+    kernel_phys_block_insert(&kernel.mem.phys.root, new_block);
+  } else {
+    kernel.mem.phys.root = new_block;
+    kernel_phys_block_init(kernel.mem.phys.root);
+  }
+
+  // Set the size
+  new_block->size = pages;
+
+#if KPALLOC_VERBOSITY >= 0
+  kprintf("phys: added region %x (pages: %d)\n", aligned_base, pages);
+#endif
+}
+
 void kernel_phys_map(memmap_t * memmap) {
   ASSERT_RETURN(memmap);
 
-  kernel.kpalloc.root = NULL;
+  kernel.mem.phys.root = NULL;
+
+  kprintf("phys: Mapping physical memory\n");
 
   struct {
     size_t blocks;
@@ -40,67 +69,58 @@ void kernel_phys_map(memmap_t * memmap) {
 
   for (size_t i = 0; i < memmap->count; ++i) {
     if (memmap->regions[i].type == MEMREG_TYPE_USABLE) {
-#if KPALLOC_VERBOSITY >= 2
-      kprintf("kpalloc: adding region %x %x\n", memmap->regions[i].base, memmap->regions[i].size);
-#endif
-      if (kernel.kpalloc.root) {
-        kernel_phys_block_insert(&kernel.kpalloc.root, (kernel_phys_block_t *) PAGE_ALIGN_UP(memmap->regions[i].base + kernel.hhdm.offset));
-      } else {
-        kernel.kpalloc.root = (kernel_phys_block_t *) PAGE_ALIGN_UP(memmap->regions[i].base + kernel.hhdm.offset);
-        kernel_phys_block_init(kernel.kpalloc.root);
-      }
-      ((kernel_phys_block_t *) (PAGE_ALIGN_UP(memmap->regions[i].base) + kernel.hhdm.offset))->size = PAGE_ALIGN_DOWN(memmap->regions[i].size) / PAGE_SIZE;
+      phys_map_region(memmap->regions[i].base, memmap->regions[i].size);
 
       stat.blocks += 1;
       stat.size += PAGE_ALIGN_DOWN(memmap->regions[i].size);
     }
   }
 
-  kprintf("kpalloc: %d blocks %d pages\n", stat.blocks, stat.size / PAGE_SIZE);
+  kprintf("phys: mapped %d blocks, %d pages\n", stat.blocks, stat.size / PAGE_SIZE);
 }
 
 uintptr_t kernel_phys_alloc(size_t pages) {
   ASSERT_RETURN(pages, 0);
 
-  kernel_phys_block_t * block = kernel.kpalloc.root;
+  kernel_phys_block_t * block = kernel.mem.phys.root;
   do {
     if (block->size >= pages) {
-      kernel_phys_block_remove(&kernel.kpalloc.root, block);
+      kernel_phys_block_remove(&kernel.mem.phys.root, block);
       if (block->size > pages) {
         kernel_phys_block_t * new_block = (kernel_phys_block_t *) PAGE_ALIGN_UP((uint64_t) block + pages * PAGE_SIZE);
-        kernel_phys_block_insert(&kernel.kpalloc.root, new_block);
+        kernel_phys_block_insert(&kernel.mem.phys.root, new_block);
         new_block->size = block->size - pages;
 #if KPALLOC_VERBOSITY >= 3
-        kprintf("kpalloc: remove %d at %p add %d at %p\n", block->size, block, new_block->size, new_block);
+        kprintf("phys: remove %d at %p add %d at %p\n", block->size, block, new_block->size, new_block);
 #endif
       }
 #if KPALLOC_VERBOSITY >= 1
-      kprintf("kpalloc: allocated %d pages at %p\n", pages, block);
+      kprintf("phys: allocated %d pages at %p\n", pages, block);
 #endif
       memset(block, 0, PAGE_SIZE * pages);
-      return (uintptr_t) block - kernel.hhdm.offset;
+      return (uintptr_t) block - kernel.mem.hhdm;
     }
     block = block->next;
-  } while (block != kernel.kpalloc.root);
+  } while (block != kernel.mem.phys.root);
 
-  kprintf("kpalloc: Can't allocate %d pages - no memory\n", pages);
+  kprintf("phys: Can't allocate %d pages - no memory\n", pages);
   return 0;
 }
 
 void kernel_phys_free(uintptr_t ptr, size_t pages) {
-  // TODO: Defragnent
-  kernel_phys_block_t * block = (kernel_phys_block_t *)(ptr + kernel.hhdm.offset);
-  kernel_phys_block_insert(&kernel.kpalloc.root, block);
+  // TODO: Defragment
+  kernel_phys_block_t * block = (kernel_phys_block_t *)(ptr + kernel.mem.hhdm);
+  kernel_phys_block_insert(&kernel.mem.phys.root, block);
   block->size = pages;
 #if KPALLOC_VERBOSITY >= 1
-  kprintf("kpalloc: freed %d pages at %p\n", pages, ptr);
+  kprintf("phys: freed %d pages at %p\n", pages, ptr);
 #endif
 }
 
 void kernel_phys_dump() {
-  kernel_phys_block_t * block = kernel.kpalloc.root;
+  kernel_phys_block_t * block = kernel.mem.phys.root;
   do {
-    kprintf("kpdump: %d pages free at %p\n", block->size, block);
+    kprintf("phys: %d pages free at %p\n", block->size, block);
     block = block->next;
-  } while (block != kernel.kpalloc.root);
+  } while (block != kernel.mem.phys.root);
 }

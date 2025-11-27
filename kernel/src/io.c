@@ -462,7 +462,7 @@ font_t font_8x12_bold_sloppy_code = {
 
 framebuffer_t tty_fb;
 
-void kinit_io(kernel_t * kernel) {
+void kernel_init_io(kernel_t * kernel) {
   tty_init(&kernel->tty, &kernel->framebuffer, &font_8x12_bold_sloppy_code);
   kernel->tty.bg = COLOR(0x10, 0x10, 0x10);
   kernel->tty.fg = COLOR(0xc7, 0xc7, 0xc7);

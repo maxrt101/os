@@ -2,7 +2,7 @@
 OUTPUT_FORMAT(elf64-x86-64)
 
 /* We want the symbol kmain to be our entry point */
-ENTRY(kmain)
+ENTRY(kernel_main)
 
 /* Define the program headers we want so the bootloader gives us the right */
 /* MMU permissions; this also allows us to exert more control over the linking */
@@ -23,7 +23,7 @@ SECTIONS
     /* that is the beginning of the region. */
     . = 0xffffffff80000000;
 
-    _kernel_start = .;
+    __kernel_start = .;
 
     /* Define a section to contain the Limine requests and assign it to its own PHDR */
     .limine_requests : {
@@ -68,5 +68,5 @@ SECTIONS
         *(.note .note.*)
     }
 
-     _kernel_end = .;
+     __kernel_end = .;
 }
