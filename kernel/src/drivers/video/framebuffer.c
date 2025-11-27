@@ -2,6 +2,23 @@
 #include <util/util.h>
 #include <util/string.h>
 
+
+#define FONT_BITMAP_GLYPH_SHIFT(__font, __x) \
+  (__font->subtype.bitmap.reversed ? (7 - __x) : __x)
+
+
+#define FONT_BITMAP_GET_PIXEL_COLOR(__font, __glyph, __y, __x, __fg, __bg)  \
+  (                                                                         \
+    (__glyph.start[__y] >> FONT_BITMAP_GLYPH_SHIFT(__font, __x)) & 1        \
+      ? __fg                                                                \
+      : __bg                                                                \
+  )
+
+
+void framebuffer_clone(framebuffer_t * dest, framebuffer_t * src) {
+  memcpy(dest, src, sizeof(framebuffer_t));
+}
+
 void framebuffer_copy(framebuffer_t * dest, framebuffer_t * src) {
   memcpy(dest->address, src->address, src->info.width_bytes * src->size.height);
 }
@@ -66,16 +83,24 @@ void framebuffer_draw_rect(framebuffer_t * fb, position_t start, position_t size
   }
 }
 
-void framebuffer_draw_char(framebuffer_t * fb, position_t pos, font_t * font, int codepoint, color_t fg, color_t bg) {
+void framebuffer_draw_char(framebuffer_t * fb, position_t pos, font_t * font, int codepoint, fixed_t scale, color_t fg, color_t bg) {
   glyph_t glyph = font_get_glyph(font, codepoint);
 
+  int scale_factor = FIXED_CEIL(scale);
+
   switch (font->type) {
-    case FONT_TYPE_BITMAP_8_16: {
-      for (coordinate_t y = 0; y < 16; ++y) {
-        for (coordinate_t x = 0; x < 8; ++x) {
-          framebuffer_draw_pixel(fb, (position_t){pos.x + x, pos.y + y}, (glyph.start[y] >> (7 - x)) & 1 ? fg : bg);
+    case FONT_TYPE_BITMAP: {
+      for (coordinate_t y = 0; y < font->subtype.bitmap.size.y; ++y) {
+        for (coordinate_t x = 0; x < font->subtype.bitmap.size.x; ++x) {
+          framebuffer_draw_rect(
+            fb,
+            (position_t){pos.x + FIXED_MUL_INT(x, scale), pos.y + FIXED_MUL_INT(y, scale)},
+            (position_t){scale_factor, scale_factor},
+            FONT_BITMAP_GET_PIXEL_COLOR(font, glyph, y, x, fg, bg)
+          );
         }
       }
+      break;
     }
 
     default:
@@ -83,10 +108,13 @@ void framebuffer_draw_char(framebuffer_t * fb, position_t pos, font_t * font, in
   }
 }
 
-void framebuffer_draw_string(framebuffer_t * fb, position_t pos, font_t * font, const char * str, color_t fg, color_t bg) {
+void framebuffer_draw_string(framebuffer_t * fb, position_t pos, font_t * font, const char * str, fixed_t scale, color_t fg, color_t bg) {
+  int dx = FIXED_MUL_INT(font_get_glyph_width(font), scale);
+
   while (*str) {
-    framebuffer_draw_char(fb, pos, font, *str, fg, bg);
-    pos.x += font_get_glyph_width(font);
+    framebuffer_draw_char(fb, pos, font, *str, scale, fg, bg);
+    // pos.x += font_get_glyph_width(font) * scale;
+    pos.x += dx;
     str++;
   }
 }

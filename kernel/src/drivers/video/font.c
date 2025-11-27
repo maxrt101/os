@@ -2,8 +2,8 @@
 
 uint32_t font_get_glyph_width(font_t * font) {
   switch (font->type) {
-    case FONT_TYPE_BITMAP_8_16:
-      return 8;
+    case FONT_TYPE_BITMAP:
+      return font->subtype.bitmap.size.x;
 
     default:
       break;
@@ -14,8 +14,8 @@ uint32_t font_get_glyph_width(font_t * font) {
 
 uint32_t font_get_glyph_height(font_t * font) {
   switch (font->type) {
-    case FONT_TYPE_BITMAP_8_16:
-      return 16;
+    case FONT_TYPE_BITMAP:
+      return font->subtype.bitmap.size.y;
 
     default:
       break;
@@ -30,8 +30,8 @@ glyph_t font_get_glyph(font_t * font, int codepoint) {
   }
 
   switch (font->type) {
-    case FONT_TYPE_BITMAP_8_16:
-      return (glyph_t){font->data + (codepoint * 16)};
+    case FONT_TYPE_BITMAP:
+      return (glyph_t){font->data + (codepoint * font_get_glyph_height(font))};
 
     default:
       break;

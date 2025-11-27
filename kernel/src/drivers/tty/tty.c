@@ -10,24 +10,26 @@
 __STATIC_INLINE void tty_putc(tty_t * tty, char ch);
 
 __STATIC_INLINE void tty_scroll(tty_t * tty) {
-  uint32_t pixels = font_get_glyph_height(tty->font);
+  uint32_t pixels = tty_get_glyph_height(tty);
   tty->cursor.y -= pixels;
   framebuffer_scroll(tty->fb, pixels, tty->bg);
 }
 
 __STATIC_INLINE void tty_new_line(tty_t * tty) {
+  uint32_t height = tty_get_glyph_height(tty);
+
   tty->cursor.x = 0;
-  tty->cursor.y += font_get_glyph_height(tty->font);
-  if (tty->cursor.y >= tty->fb->size.height) {
+  tty->cursor.y += height;
+  if (tty->cursor.y >= tty->fb->size.height - height) {
     tty_scroll(tty);
   }
 }
 
 __STATIC_INLINE void tty_backspace(tty_t * tty) {
   if (tty->cursor.x > 0) {
-    tty->cursor.x -= font_get_glyph_width(tty->font);
+    tty->cursor.x -= tty_get_glyph_width(tty);
     tty_putc(tty, ' ');
-    tty->cursor.x -= font_get_glyph_width(tty->font);
+    tty->cursor.x -= tty_get_glyph_width(tty);
   }
 }
 
@@ -40,9 +42,9 @@ __STATIC_INLINE void tty_putc(tty_t * tty, char ch) {
   }
 
   if (ch == '\t') {
-    uint32_t cols = tty->cursor.x / font_get_glyph_width(tty->font);
+    uint32_t cols = tty->cursor.x / tty_get_glyph_width(tty);
     if (cols % TAB_WIDTH_CHARS != 0) {
-      tty->cursor.x += (TAB_WIDTH_CHARS - (cols % TAB_WIDTH_CHARS)) * font_get_glyph_width(tty->font);
+      tty->cursor.x += (TAB_WIDTH_CHARS - (cols % TAB_WIDTH_CHARS)) * tty_get_glyph_width(tty);
     }
     goto exit;
   }
@@ -70,11 +72,12 @@ __STATIC_INLINE void tty_putc(tty_t * tty, char ch) {
     tty->cursor,
     tty->font,
     ch,
+    tty->scale,
     tty->fg,
     tty->bg
   );
 
-  tty->cursor.x += font_get_glyph_width(tty->font);
+  tty->cursor.x += tty_get_glyph_width(tty);
 
   if (tty->cursor.x >= tty->fb->size.width) {
     tty_new_line(tty);
@@ -85,14 +88,15 @@ exit:
 }
 
 __STATIC_INLINE void tty_dcursor(tty_t * tty, bool state) {
-  size_t char_width = font_get_glyph_width(tty->font);
-  size_t char_height = font_get_glyph_height(tty->font);
+  size_t char_width = tty_get_glyph_width(tty);
+  size_t char_height = tty_get_glyph_height(tty);
 
-  for (size_t y = 1; y < char_height - 1; ++y) {
-    for (size_t x = 1; x < char_width - 1; ++x) {
-      framebuffer_draw_pixel(tty->fb, (position_t){tty->cursor.x + x, tty->cursor.y + y}, state ? tty->fg : tty->bg);
-    }
-  }
+  framebuffer_draw_rect(
+    tty->fb,
+    (position_t){tty->cursor.x + 1, tty->cursor.y + 1},
+    (position_t){char_width - 1, char_height - 1},
+    state ? tty->fg : tty->bg
+  );
 }
 
 __STATIC_INLINE void tty_update_cursor(tty_t * tty) {
@@ -143,8 +147,8 @@ void tty_handle_ansi_esc_seq(ansi_esc_seq_t * seq, void * ctx) {
       break;
 
     case ANSI_ESC_SEQ_MOVE_CURSOR_TO:
-      tty->cursor.y = seq->payload.move_cursor_to.line * font_get_glyph_height(tty->font);
-      tty->cursor.x = seq->payload.move_cursor_to.col * font_get_glyph_width(tty->font);
+      tty->cursor.y = seq->payload.move_cursor_to.line * tty_get_glyph_height(tty);
+      tty->cursor.x = seq->payload.move_cursor_to.col * tty_get_glyph_width(tty);
       break;
 
     case ANSI_ESC_SEQ_SAVE_CURSOR_POSITION:
@@ -190,6 +194,7 @@ void tty_init(tty_t * tty, framebuffer_t * fb, font_t * font) {
 
   tty->fb = fb;
   tty->font = font;
+  tty->scale = INT2FIXED(1),
   tty->fg = (color_t){255, 255, 255};
   tty->bg = (color_t){0, 0, 0};
   tty->cursor.x = 0;
@@ -289,4 +294,12 @@ bool tty_getline_async(tty_t * tty, char * buf, size_t max, size_t * index) {
 
   buf[*index] = '\0';
   return true;
+}
+
+uint32_t tty_get_glyph_width(tty_t * tty) {
+  return FIXED_MUL_INT(font_get_glyph_width(tty->font), tty->scale);
+}
+
+uint32_t tty_get_glyph_height(tty_t * tty) {
+  return FIXED_MUL_INT(font_get_glyph_height(tty->font), tty->scale);
 }

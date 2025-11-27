@@ -3,6 +3,7 @@
 #include <drivers/video/framebuffer.h>
 #include <time/timeout.h>
 #include <util/lock.h>
+#include <util/fixed.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -10,6 +11,8 @@ typedef struct {
   framebuffer_t * fb;
 
   font_t * font;
+
+  fixed_t scale;
 
   color_t bg;
   color_t fg;
@@ -30,3 +33,6 @@ void tty_print(tty_t * tty, const char * buf);
 char tty_getch(tty_t * tty);
 void tty_getline(tty_t * tty, char * buf, size_t max);
 bool tty_getline_async(tty_t * tty, char * buf, size_t max, size_t * index);
+
+uint32_t tty_get_glyph_width(tty_t * tty);
+uint32_t tty_get_glyph_height(tty_t * tty);
