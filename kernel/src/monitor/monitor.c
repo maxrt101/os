@@ -1,6 +1,7 @@
 #include <monitor/monitor.h>
 #include <drivers/tty/ansi.h>
 #include <util/string.h>
+#include <util/fixed.h>
 #include <time/sleep.h>
 #include <time/time.h>
 #include <kernel.h>
@@ -31,16 +32,16 @@ void monitor_cmd_test(int argc, char ** argv) {
   time_t t2_min = time_convert(t2, TIME_MINUTES);      kprintf("t2 ms->min %d.%d\n", t2_min.value, t2_min.frac);
   time_t t2_hr  = time_convert(t2, TIME_HOURS);        kprintf("t2 ms->hr %d.%d\n", t2_hr.value, t2_hr.frac);
 
-  uintptr_t p1 = kpalloc(1);
-  uintptr_t p2 = kpalloc(1);
+  uintptr_t p1 = kernel_phys_alloc(1);
+  uintptr_t p2 = kernel_phys_alloc(1);
   kprintf("Allocated 1 page at %p\n", p1);
   kprintf("Allocated 1 page at %p\n", p2);
-  kpfree(p2, 1);
-  kpfree(p1, 1);
+  kernel_phys_free(p2, 1);
+  kernel_phys_free(p1, 1);
 
-  uintptr_t p3 = kpalloc(1);
+  uintptr_t p3 = kernel_phys_alloc(1);
   kprintf("Allocated 1 page at %p\n", p3);
-  kpfree(p3, 1);
+  kernel_phys_free(p3, 1);
 
   kprintf("123\t4\n");
   kprintf("1\t2\n");
@@ -52,6 +53,14 @@ void monitor_cmd_test(int argc, char ** argv) {
   kprintf("%08p\n", 0xFFAAFF);
   kprintf("%016p\n", 0xFA);
   kprintf("%8s\n", "abc");
+
+  // fixed_t f = fixed_new(1, 5);
+  // kprintf("%d.%d * %d = %d\n", f.whole, f.decimal, 8, fixed_multiply_int(8, f));
+
+  fixed_t f1 = INT2FIXED(8);
+  fixed_t f2 = FIXED(1, 5, 10);
+  fixed_t f = FIXED_MUL(f1, f2);
+  kprintf("8 * 1.5 = %x %d (%d.%d)\n", f, FIXED2INT(f), FIXED_WHOLE(f), FIXED_FRACTION(f));
 }
 
 __OPTIMIZE(0) void monitor_cmd_test2(int argc, char ** argv) {
@@ -163,6 +172,18 @@ void monitor_cmd_color(int argc, char ** argv) {
   }
 }
 
+void monitor_cmd_scale(int argc, char ** argv) {
+  if (argc == 1) {
+    kprintf("Usage scale WHOLE [FRAC]\n");
+    return;
+  }
+
+  int whole = atoi(argv[1], 10);
+  int frac = argc > 2 ? atoi(argv[2], 10) : 0;
+
+  kernel.tty.scale = FIXED(whole, frac, 10);
+}
+
 void monitor_cmd_tick(int argc, char ** argv) {
   kprintf("%d\n", arch_get_tick());
 }
@@ -189,8 +210,8 @@ void monitor_cmd_usleep(int argc, char ** argv) {
   usleep(atoi(argv[1], 10));
 }
 
-void monitor_cmd_kpdump(int argc, char ** argv) {
-  kpdump();
+void monitor_cmd_mem(int argc, char ** argv) {
+  kernel_phys_dump();
 }
 
 static struct {
@@ -204,11 +225,12 @@ static struct {
   {"div0", monitor_cmd_div0},
   {"clear", monitor_cmd_clear},
   {"color", monitor_cmd_color},
+  {"scale", monitor_cmd_scale},
   {"tick", monitor_cmd_tick},
   {"time", monitor_cmd_time},
   {"sleep", monitor_cmd_sleep},
   {"usleep", monitor_cmd_usleep},
-  {"kpdump", monitor_cmd_kpdump},
+  {"mem", monitor_cmd_mem},
 };
 
 __STATIC_INLINE void monitor_run_cmd(char * buf) {
@@ -236,8 +258,6 @@ __STATIC_INLINE void monitor_run_cmd(char * buf) {
 }
 
 void monitor_main() {
-  int stat_x = kernel.tty.fb->size.width / font_get_glyph_width(kernel.tty.font) - 20;
-
   int cycle = 0;
   char buf[32] = {0};
   size_t buf_index = 0;
@@ -245,6 +265,8 @@ void monitor_main() {
   kprintf("Monitor\n> ");
 
   while (1) {
+    int stat_x = kernel.tty.fb->size.width / tty_get_glyph_width(&kernel.tty) - 15;
+
     kprintf("\033[s");
     kprintf("\033[0;%dH cycle=%d", stat_x, cycle);
     kprintf("\033[1;%dH tick=%d", stat_x, arch_get_tick());

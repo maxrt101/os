@@ -5,6 +5,8 @@
 #include <kernel.h>
 #include <arch.h>
 
+#include "memory/virtmem.h"
+
 #define FB_TEST 0
 
 kernel_t kernel;
@@ -22,8 +24,9 @@ void kinit(kernel_t * kernel) {
   kinit_io(kernel);
   kprintf("Initializing kernel\n");
   memmap_dump(&kernel->memmap);
-  kpmap(&kernel->memmap);
+  kernel_phys_map(&kernel->memmap);
   arch_init(kernel);
+  // kernel_virt_map();
   arch_enable_interrupts();
 }
 
@@ -42,6 +45,7 @@ int kmain(void) {
   UTIL_IF_1(FB_TEST, fb_test());
 
   kprintf("Kernel initialized\n");
+  kprintf("Kernel HHDM offset: %p\n", kernel.hhdm.offset);
 
   monitor_main();
 
