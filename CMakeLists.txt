@@ -39,7 +39,7 @@ project_add_define(
 
 	# Logs/Verbosity
 	"SHOW_TIPS=1"
-	"KPALLOC_VERBOSITY=1"
+	"KPALLOC_VERBOSITY=0"
 )
 
 project_add_link_options(ALL
