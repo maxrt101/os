@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// #define FONT_BITMAP_CREATE(__data, __x, __y, __from, __to, )
-
 typedef enum {
   FONT_TYPE_NONE = 0,
   FONT_TYPE_BITMAP,

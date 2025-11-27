@@ -113,7 +113,6 @@ void framebuffer_draw_string(framebuffer_t * fb, position_t pos, font_t * font, 
 
   while (*str) {
     framebuffer_draw_char(fb, pos, font, *str, scale, fg, bg);
-    // pos.x += font_get_glyph_width(font) * scale;
     pos.x += dx;
     str++;
   }
