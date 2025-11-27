@@ -56,7 +56,7 @@ __STATIC_INLINE void idt_register_irq_handler(idt_desc_t * idt, uint64_t isr, ui
 }
 
 void x86_64_init_idt(kernel_t * kernel) {
-  kernel->arch.idt = (void *) (kernel_phys_alloc(1) + kernel->hhdm.offset);
+  kernel->arch.idt = (void *) (kernel_phys_alloc(1) + kernel->mem.hhdm);
 
   idt_desc_t * idt = kernel->arch.idt;
 

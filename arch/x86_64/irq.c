@@ -138,7 +138,7 @@ void x86_64_irq_register_handler(uint32_t irq, void * handler) {
 }
 
 void x86_64_init_irq(kernel_t * kernel, void * idt, size_t irq_count) {
-  kernel->arch.irq = (void *) (kernel_phys_alloc(1) + kernel->hhdm.offset);
+  kernel->arch.irq = (void *) (kernel_phys_alloc(1) + kernel->mem.hhdm);
 
   // Exceptions
   IRQ_EXC_REGISTER(idt, 0);

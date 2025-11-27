@@ -106,7 +106,7 @@ typedef struct kernel_t kernel_t;
 #define ARCH_ASM_GLOBAL(...) asm (__VA_ARGS__)
 #define ARCH_ASM(...) asm volatile (__VA_ARGS__)
 
-#define ARCH_BKPT() ARCH_ASM("int 3")
+#define ARCH_BKPT() ARCH_ASM("int $3")
 
 __STATIC_INLINE uint8_t inb(uint16_t port) {
   uint8_t ret;

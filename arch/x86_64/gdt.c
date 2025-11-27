@@ -119,7 +119,7 @@ __STATIC_INLINE void ldt_init_descriptor(gdt_desc_t * gdt, uint32_t index, uint6
 }
 
 void x86_64_init_gdt(kernel_t * kernel) {
-  kernel->arch.gdt = (void *) (kernel_phys_alloc(1) + kernel->hhdm.offset);
+  kernel->arch.gdt = (void *) (kernel_phys_alloc(1) + kernel->mem.hhdm);
 
   gdt_desc_t * gdt = kernel->arch.gdt;
 

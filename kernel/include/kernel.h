@@ -18,19 +18,23 @@ typedef struct kernel_t {
   framebuffer_t       framebuffer;
   tty_t               tty;
 
-  memmap_t            memmap;
-  kernel_phys_alloc_t kpalloc;
-
   struct {
-    uint64_t          offset;
-  } hhdm;
+    memmap_t            map;
+    kernel_phys_alloc_t phys;
+
+    uint64_t            hhdm;
+
+    uint64_t            kernel_phys_base;
+    uint64_t            kernel_virt_base;
+  } mem;
+
 } kernel_t;
 
 extern kernel_t kernel;
 
-void kinit(kernel_t * kernel);
-void kinit_port(kernel_t * kernel);
-void kinit_io(kernel_t * kernel);
+void kernel_init(kernel_t * kernel);
+void kernel_init_port(kernel_t * kernel);
+void kernel_init_io(kernel_t * kernel);
 
 void vkprintf(const char * fmt, va_list args);
 void kprintf(const char * fmt, ...);

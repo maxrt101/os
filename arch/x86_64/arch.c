@@ -62,3 +62,9 @@ void arch_enable_interrupts(void) {
 void arch_disable_interrupts(void) {
   ARCH_ASM("cli");
 }
+
+uint64_t arch_get_stack_pointer(void) {
+  uint64_t val;
+  ARCH_ASM("mov %%rsp, %0" : "=r" (val));
+  return val;
+}
