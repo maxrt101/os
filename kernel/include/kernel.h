@@ -13,16 +13,16 @@ enum kernel_events_e {
 };
 
 typedef struct kernel_t {
-  arch_ctx_t    arch;
+  arch_ctx_t          arch;
 
-  framebuffer_t framebuffer;
-  tty_t         tty;
+  framebuffer_t       framebuffer;
+  tty_t               tty;
 
-  memmap_t      memmap;
-  kpalloc_t     kpalloc;
+  memmap_t            memmap;
+  kernel_phys_alloc_t kpalloc;
 
   struct {
-    uint64_t    offset;
+    uint64_t          offset;
   } hhdm;
 } kernel_t;
 
