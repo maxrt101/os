@@ -13,13 +13,13 @@ typedef enum {
   MEMREG_TYPE_FRAMEBUFFER,
 } memreg_type_t;
 
-typedef struct {
+typedef struct memreg_t {
   memreg_type_t type;
   uint64_t      base;
   uint64_t      size;
 } memreg_t;
 
-typedef struct {
+typedef struct memmap_t {
   uint64_t   count;
   memreg_t * regions;
 } memmap_t;
