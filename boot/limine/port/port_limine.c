@@ -75,7 +75,7 @@ void kinit_port(kernel_t * kernel) {
   }
 
   if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
-    // TODO: Use fallback - VGA char mode (or VGA framwbuffer?)
+    // TODO: Use fallback - VGA char mode (or VGA framebuffer?)
     arch_abort();
   }
 
