@@ -49,7 +49,11 @@ typedef void (*x86_64_irq_handler_t)(void *);
   __type * __name = (__type *) (__rsp - sizeof(__type));
 
 static void exception_handler(x86_64_irq_exc_handler_ctx_t * ctx) {
-  kprintf("\nException: %s (error_code=%d)\n", x86_64_get_exc_name(ctx->irq), ctx->error_code);
+  kprintf("\nException: %s (error_code=0x%x)\n", x86_64_get_exc_name(ctx->irq), ctx->error_code);
+
+  if (ctx->irq == 14) {
+    while (1) ;
+  }
 
   GET_IRQ_FRAME(x86_64_irq_exc_frame_t, frame, ctx->cpu_frame->rsp);
 
@@ -134,7 +138,7 @@ void x86_64_irq_register_handler(uint32_t irq, void * handler) {
 }
 
 void x86_64_init_irq(kernel_t * kernel, void * idt, size_t irq_count) {
-  kernel->arch.irq = (void *) (kpalloc(1) + kernel->hhdm.offset);
+  kernel->arch.irq = (void *) (kernel_phys_alloc(1) + kernel->hhdm.offset);
 
   // Exceptions
   IRQ_EXC_REGISTER(idt, 0);
