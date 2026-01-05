@@ -1,17 +1,16 @@
 #include <util/util.h>
+#include <util/string.h>
+#include <memory/memory.h>
 #include <x86_64.h>
 #include <kernel.h>
 
 #define KERNEL_CS 0x08
 #define KERNEL_DS 0x10
+#define USER_DS   0x18
+#define USER_CS   0x20
+#define TSS_SEG   0x28
 
-#define USE_TSS 0
-
-#if USE_TSS
-#define GDT_MAX_DESCRIPTORS 5
-#else
-#define GDT_MAX_DESCRIPTORS 3
-#endif
+#define GDT_MAX_DESCRIPTORS 7
 
 #define GDT_DESC_ACCESS         0x01 /** Access bit */
 #define GDT_DESC_RW             0x02 /** Descriptor is readable and writable. Default - read only */
@@ -20,6 +19,8 @@
 #define GDT_DESC_CODE_DATA      0x10 /** Code or data segment. Default - system defined descriptor */
 #define GDT_DESC_DPL            0x60 /** DPL bits */
 #define GDT_DESC_MEMORY         0x80 /** "In memory" bit */
+
+#define GDT_ACCESS_USER (GDT_DESC_DPL | GDT_DESC_ACCESS | GDT_DESC_RW)
 
 #define GDT_FLAG_LONG           0b0010
 
@@ -66,11 +67,11 @@ typedef __PACKED_STRUCT {
 __STATIC_INLINE void gdt_load(gdtr_t * gdtr) {
   ARCH_ASM("lgdt (%0)" : : "r" (gdtr));
 
-#if USE_TSS
-  ARCH_ASM("mov $0x18, %%ax\n"
+  ARCH_ASM("mov %[tss], %%ax \n"
            "ltr %%ax"
-           ::: "eax");
-#endif
+           :
+           : [tss] "i" (TSS_SEG)
+           : "eax");
 }
 
 __STATIC_INLINE void reload_segment_regs() {
@@ -123,6 +124,8 @@ void x86_64_init_gdt(kernel_t * kernel) {
 
   gdt_desc_t * gdt = kernel->arch.gdt;
 
+  memset(gdt, 0, PAGE_SIZE);
+
   gdtr_t gdtr = {
     .limit = (sizeof(gdt_desc_t) * GDT_MAX_DESCRIPTORS) - 1,
     .base = (uint64_t) gdt
@@ -140,14 +143,29 @@ void x86_64_init_gdt(kernel_t * kernel) {
     0
   );
 
-#if USE_TSS
-  ldt_init_descriptor(gdt, 3, (uint64_t) kernel->arch.tss, sizeof(x86_64_tss_t) - 1,
-     LDT_DESC_PRESENT | LDT_DESC_AVAILABLE_TSS,
-  0
+  gdt_init_descriptor(gdt, 3, 0, 0,
+    GDT_DESC_RW | GDT_DESC_CODE_DATA | GDT_DESC_MEMORY | GDT_DESC_DPL, // 0xF2
+    0
   );
-#endif
+
+  gdt_init_descriptor(gdt, 4, 0, 0,
+    GDT_DESC_RW | GDT_DESC_EXEC_CODE | GDT_DESC_CODE_DATA | GDT_DESC_MEMORY | GDT_DESC_DPL, // 0xFA
+    GDT_FLAG_LONG
+  );
+
+  ldt_init_descriptor(gdt, 5, (uint64_t) kernel->arch.tss, sizeof(x86_64_tss_t) - 1,
+     LDT_DESC_PRESENT | LDT_DESC_AVAILABLE_TSS,
+     0
+  );
 
   gdt_load(&gdtr);
   reload_segment_regs();
+}
+
+void x86_64_init_tss(kernel_t * kernel) {
+  kernel->arch.tss = (void *) (kernel_phys_alloc(1) + kernel->mem.hhdm);
+  x86_64_tss_t * tss = kernel->arch.tss;
+  tss->iomap_base = sizeof(x86_64_tss_t);
+  tss->rsp0 = (arch_get_stack_pointer() & ~0xFFF) + PAGE_SIZE; // kernel stack
 }
 

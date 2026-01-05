@@ -90,8 +90,14 @@ typedef struct {
 
 typedef __PACKED_STRUCT {
   uint32_t reserved_0;
-  uint64_t rsp0;
-  uint32_t reserved_1[23];
+  uint64_t rsp0;       // Stack pointer for Ring 0 (Kernel) interrupts
+  uint64_t rsp1;
+  uint64_t rsp2;
+  uint64_t reserved_1;
+  uint64_t ist[7];     // Interrupt Stack Table (IST) 1-7
+  uint64_t reserved_2;
+  uint16_t reserved_3;
+  uint16_t iomap_base;
 } x86_64_tss_t;
 
 typedef struct arch_ctx_t {
