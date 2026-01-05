@@ -6,6 +6,8 @@
 #include <time/time.h>
 #include <kernel.h>
 
+#include "memory/memory.h"
+
 #define MONITOR_ARGV_MAX 16
 #define MONITOR_DEBUG_SC  0
 #define MONITOR_DEBUG_IRQ 0
@@ -61,6 +63,15 @@ void monitor_cmd_test(int argc, char ** argv) {
   fixed_t f2 = FIXED(1, 5, 10);
   fixed_t f = FIXED_MUL(f1, f2);
   kprintf("8 * 1.5 = %x %d (%d.%d)\n", f, FIXED2INT(f), FIXED_WHOLE(f), FIXED_FRACTION(f));
+
+  {
+    void * p1 = kmalloc(100);
+    void * p2 = kmalloc(200);
+    kprintf("Allocated: %p, %p\n", p1, p2);
+    kfree(p1);
+    void *p3 = kmalloc(50); // Should end up in the same spot as p1 (reusing memory)
+    kprintf("Reused: %p\n", p3);
+  }
 }
 
 __OPTIMIZE(0) void monitor_cmd_test2(int argc, char ** argv) {
@@ -194,7 +205,7 @@ void monitor_cmd_time(int argc, char ** argv) {
 
 void monitor_cmd_sleep(int argc, char ** argv) {
   if (argc == 1) {
-    kprintf("Usage: sleep SEC\b");
+    kprintf("Usage: sleep SEC\n");
     return;
   }
 
@@ -203,7 +214,7 @@ void monitor_cmd_sleep(int argc, char ** argv) {
 
 void monitor_cmd_usleep(int argc, char ** argv) {
   if (argc == 1) {
-    kprintf("Usage: usleep US\b");
+    kprintf("Usage: usleep USEC\n");
     return;
   }
 

@@ -99,6 +99,7 @@ typedef struct arch_ctx_t {
   void * gdt;
   void * idt;
   void * irq;
+  void * page_table;
 } arch_ctx_t;
 
 typedef struct kernel_t kernel_t;

@@ -27,8 +27,8 @@ void arch_enable_interrupts(void);
 void arch_disable_interrupts(void);
 
 void arch_virt_map(void);
-// void arch_virt_map_page(void * vaddr, uint64_t paddr, uint64_t flags);
-// void arch_virt_unmap_page(void * vaddr);
-// uint64_t arch_virt_translate(void * vaddr);
+void arch_virt_map_page(uint64_t * pml4, void * vaddr, uint64_t paddr);
+void arch_virt_unmap_page(void * vaddr);
+uint64_t arch_virt_translate(void * vaddr);
 
 uint64_t arch_get_stack_pointer(void);

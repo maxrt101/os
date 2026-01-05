@@ -13,10 +13,10 @@ enum kernel_events_e {
 };
 
 typedef struct kernel_t {
-  arch_ctx_t          arch;
+  arch_ctx_t            arch;
 
-  framebuffer_t       framebuffer;
-  tty_t               tty;
+  framebuffer_t         framebuffer;
+  tty_t                 tty;
 
   struct {
     memmap_t            map;
@@ -27,7 +27,6 @@ typedef struct kernel_t {
     uint64_t            kernel_phys_base;
     uint64_t            kernel_virt_base;
   } mem;
-
 } kernel_t;
 
 extern kernel_t kernel;

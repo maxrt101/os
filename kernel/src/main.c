@@ -5,10 +5,12 @@
 #include <kernel.h>
 #include <arch.h>
 
+#include "memory/memory.h"
 #include "memory/virtmem.h"
 
 #define FB_TEST 0
 
+#if 0
 const char* intro_art[] = {
   "                                       )                       \n",
   "                            )      ((     (                    \n",
@@ -30,6 +32,37 @@ const char* intro_art[] = {
   "-----||-/------`-._/||-o--o---o---                             \n",
   "  ~~~~~'                                                       \n"
 };
+#endif
+
+#if 0
+const char* intro_art[] = {
+  " ____________________ \n",
+  "|  |              |  |\n",
+  "|[]|  No Name OS  |[]|\n",
+  "|  |     v0.1     |  |\n",
+  "|  |              |  |\n",
+  "|  |              |  |\n",
+  "|  |______________|  |\n",
+  "|                    |\n",
+  "|     ____________   |\n",
+  "|    | __      |  |  |\n",
+  "|    ||  |     |  |  |\n",
+  "|    ||__|     |  |  |\n",
+  "|____|_________|__|__|\n"
+};
+#endif
+
+#if 1
+const char* intro_art[] = {
+"         .--------.\n",
+"  .----. |.------.|\n",
+"  |____| || >_   ||\n",
+"  |==..| ||      ||\n",
+"  |----| |'------'|\n",
+"  |    | | ..     |\n",
+"  |____|~'--------'\n",
+};
+#endif
 
 kernel_t kernel;
 
@@ -62,6 +95,7 @@ void kernel_init(kernel_t * kernel) {
   kernel_phys_map(&kernel->mem.map);
   arch_init(kernel);
   kernel_virt_map();
+  kheap_init();
 
   arch_enable_interrupts();
 }
