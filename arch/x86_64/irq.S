@@ -1,0 +1,588 @@
+.section .text
+.extern x86_64_exception_handler
+.global isr_stub_table
+
+.macro ISR_NOERRCODE nr
+    .align 8
+    isr_\nr:
+        push $0             // Push dummy error code
+        push $\nr           // Push interrupt number
+        jmp x86_64_isr_common_stub
+.endm
+
+.macro ISR_ERRCODE nr
+    .align 8
+    isr_\nr:
+        // Error code is already on the stack
+        push $\nr           // Push interrupt number
+        jmp x86_64_isr_common_stub
+.endm
+
+x86_64_isr_common_stub:
+    // Save all General Purpose Registers
+    push %rax
+    push %rbx
+    push %rcx
+    push %rdx
+    push %rsi
+    push %rdi
+    push %rbp
+    push %r8
+    push %r9
+    push %r10
+    push %r11
+    push %r12
+    push %r13
+    push %r14
+    push %r15
+
+    // Prepare C Function Call
+    // SysV ABI: 1st argument goes in RDI
+    // We pass the stack pointer (RSP), which points to the struct we just built
+    mov %rsp, %rdi
+
+    // 3. Call C Handler
+    call x86_64_exception_handler
+
+    // Restore Registers
+    pop %r15
+    pop %r14
+    pop %r13
+    pop %r12
+    pop %r11
+    pop %r10
+    pop %r9
+    pop %r8
+    pop %rbp
+    pop %rdi
+    pop %rsi
+    pop %rdx
+    pop %rcx
+    pop %rbx
+    pop %rax
+
+    // Clean up (ISR Number + Error Code = 16 bytes)
+    add $16, %rsp
+
+    // Return
+    iretq
+
+// THE STUB TABLE
+.data
+.global isr_stub_table
+isr_stub_table:
+    .quad isr_0
+    .quad isr_1
+    .quad isr_2
+    .quad isr_3
+    .quad isr_4
+    .quad isr_5
+    .quad isr_6
+    .quad isr_7
+    .quad isr_8
+    .quad isr_9
+    .quad isr_10
+    .quad isr_11
+    .quad isr_12
+    .quad isr_13
+    .quad isr_14
+    .quad isr_15
+    .quad isr_16
+    .quad isr_17
+    .quad isr_18
+    .quad isr_19
+    .quad isr_20
+    .quad isr_21
+    .quad isr_22
+    .quad isr_23
+    .quad isr_24
+    .quad isr_25
+    .quad isr_26
+    .quad isr_27
+    .quad isr_28
+    .quad isr_29
+    .quad isr_30
+    .quad isr_31
+    .quad isr_32
+    .quad isr_33
+    .quad isr_34
+    .quad isr_35
+    .quad isr_36
+    .quad isr_37
+    .quad isr_38
+    .quad isr_39
+    .quad isr_40
+    .quad isr_41
+    .quad isr_42
+    .quad isr_43
+    .quad isr_44
+    .quad isr_45
+    .quad isr_46
+    .quad isr_47
+    .quad isr_48
+    .quad isr_49
+    .quad isr_50
+    .quad isr_51
+    .quad isr_52
+    .quad isr_53
+    .quad isr_54
+    .quad isr_55
+    .quad isr_56
+    .quad isr_57
+    .quad isr_58
+    .quad isr_59
+    .quad isr_60
+    .quad isr_61
+    .quad isr_62
+    .quad isr_63
+    .quad isr_64
+    .quad isr_65
+    .quad isr_66
+    .quad isr_67
+    .quad isr_68
+    .quad isr_69
+    .quad isr_70
+    .quad isr_71
+    .quad isr_72
+    .quad isr_73
+    .quad isr_74
+    .quad isr_75
+    .quad isr_76
+    .quad isr_77
+    .quad isr_78
+    .quad isr_79
+    .quad isr_80
+    .quad isr_81
+    .quad isr_82
+    .quad isr_83
+    .quad isr_84
+    .quad isr_85
+    .quad isr_86
+    .quad isr_87
+    .quad isr_88
+    .quad isr_89
+    .quad isr_90
+    .quad isr_91
+    .quad isr_92
+    .quad isr_93
+    .quad isr_94
+    .quad isr_95
+    .quad isr_96
+    .quad isr_97
+    .quad isr_98
+    .quad isr_99
+    .quad isr_100
+    .quad isr_101
+    .quad isr_102
+    .quad isr_103
+    .quad isr_104
+    .quad isr_105
+    .quad isr_106
+    .quad isr_107
+    .quad isr_108
+    .quad isr_109
+    .quad isr_110
+    .quad isr_111
+    .quad isr_112
+    .quad isr_113
+    .quad isr_114
+    .quad isr_115
+    .quad isr_116
+    .quad isr_117
+    .quad isr_118
+    .quad isr_119
+    .quad isr_120
+    .quad isr_121
+    .quad isr_122
+    .quad isr_123
+    .quad isr_124
+    .quad isr_125
+    .quad isr_126
+    .quad isr_127
+    .quad isr_128
+    .quad isr_129
+    .quad isr_130
+    .quad isr_131
+    .quad isr_132
+    .quad isr_133
+    .quad isr_134
+    .quad isr_135
+    .quad isr_136
+    .quad isr_137
+    .quad isr_138
+    .quad isr_139
+    .quad isr_140
+    .quad isr_141
+    .quad isr_142
+    .quad isr_143
+    .quad isr_144
+    .quad isr_145
+    .quad isr_146
+    .quad isr_147
+    .quad isr_148
+    .quad isr_149
+    .quad isr_150
+    .quad isr_151
+    .quad isr_152
+    .quad isr_153
+    .quad isr_154
+    .quad isr_155
+    .quad isr_156
+    .quad isr_157
+    .quad isr_158
+    .quad isr_159
+    .quad isr_160
+    .quad isr_161
+    .quad isr_162
+    .quad isr_163
+    .quad isr_164
+    .quad isr_165
+    .quad isr_166
+    .quad isr_167
+    .quad isr_168
+    .quad isr_169
+    .quad isr_170
+    .quad isr_171
+    .quad isr_172
+    .quad isr_173
+    .quad isr_174
+    .quad isr_175
+    .quad isr_176
+    .quad isr_177
+    .quad isr_178
+    .quad isr_179
+    .quad isr_180
+    .quad isr_181
+    .quad isr_182
+    .quad isr_183
+    .quad isr_184
+    .quad isr_185
+    .quad isr_186
+    .quad isr_187
+    .quad isr_188
+    .quad isr_189
+    .quad isr_190
+    .quad isr_191
+    .quad isr_192
+    .quad isr_193
+    .quad isr_194
+    .quad isr_195
+    .quad isr_196
+    .quad isr_197
+    .quad isr_198
+    .quad isr_199
+    .quad isr_200
+    .quad isr_201
+    .quad isr_202
+    .quad isr_203
+    .quad isr_204
+    .quad isr_205
+    .quad isr_206
+    .quad isr_207
+    .quad isr_208
+    .quad isr_209
+    .quad isr_210
+    .quad isr_211
+    .quad isr_212
+    .quad isr_213
+    .quad isr_214
+    .quad isr_215
+    .quad isr_216
+    .quad isr_217
+    .quad isr_218
+    .quad isr_219
+    .quad isr_220
+    .quad isr_221
+    .quad isr_222
+    .quad isr_223
+    .quad isr_224
+    .quad isr_225
+    .quad isr_226
+    .quad isr_227
+    .quad isr_228
+    .quad isr_229
+    .quad isr_230
+    .quad isr_231
+    .quad isr_232
+    .quad isr_233
+    .quad isr_234
+    .quad isr_235
+    .quad isr_236
+    .quad isr_237
+    .quad isr_238
+    .quad isr_239
+    .quad isr_240
+    .quad isr_241
+    .quad isr_242
+    .quad isr_243
+    .quad isr_244
+    .quad isr_245
+    .quad isr_246
+    .quad isr_247
+    .quad isr_248
+    .quad isr_249
+    .quad isr_250
+    .quad isr_251
+    .quad isr_252
+    .quad isr_253
+    .quad isr_254
+    .quad isr_255
+
+.text
+// Generate the actual label definitions
+ISR_NOERRCODE 0  // Divide By Zero Error
+ISR_NOERRCODE 1  // Debug
+ISR_NOERRCODE 2  // NMI
+ISR_NOERRCODE 3  // Breakpoint
+ISR_NOERRCODE 4  // Overflow
+ISR_NOERRCODE 5  // Bound Range Exceeded
+ISR_NOERRCODE 6  // Invalid Opcode
+ISR_NOERRCODE 7  // Device not available
+ISR_ERRCODE   8  // Double Fault
+ISR_NOERRCODE 9  // x87 Segment Overrun
+ISR_ERRCODE   10 // Invalid TSS
+ISR_ERRCODE   11 // Segment Not Present
+ISR_ERRCODE   12 // Stack Fault
+ISR_ERRCODE   13 // General Protection Fault
+ISR_ERRCODE   14 // Page Fault
+ISR_NOERRCODE 15
+ISR_NOERRCODE 16 // x87 FPU error
+ISR_ERRCODE   17 // Alignment Check
+ISR_NOERRCODE 18 // Machine Check
+ISR_NOERRCODE 19 // SIMD (SSE/AVX) error
+ISR_NOERRCODE 20
+ISR_NOERRCODE 21
+ISR_NOERRCODE 22
+ISR_NOERRCODE 23
+ISR_NOERRCODE 24
+ISR_NOERRCODE 25
+ISR_NOERRCODE 26
+ISR_NOERRCODE 27
+ISR_NOERRCODE 28
+ISR_NOERRCODE 29
+ISR_NOERRCODE 30
+ISR_NOERRCODE 31
+ISR_NOERRCODE 32
+ISR_NOERRCODE 33
+ISR_NOERRCODE 34
+ISR_NOERRCODE 35
+ISR_NOERRCODE 36
+ISR_NOERRCODE 37
+ISR_NOERRCODE 38
+ISR_NOERRCODE 39
+ISR_NOERRCODE 40
+ISR_NOERRCODE 41
+ISR_NOERRCODE 42
+ISR_NOERRCODE 43
+ISR_NOERRCODE 44
+ISR_NOERRCODE 45
+ISR_NOERRCODE 46
+ISR_NOERRCODE 47
+ISR_NOERRCODE 48
+ISR_NOERRCODE 49
+ISR_NOERRCODE 50
+ISR_NOERRCODE 51
+ISR_NOERRCODE 52
+ISR_NOERRCODE 53
+ISR_NOERRCODE 54
+ISR_NOERRCODE 55
+ISR_NOERRCODE 56
+ISR_NOERRCODE 57
+ISR_NOERRCODE 58
+ISR_NOERRCODE 59
+ISR_NOERRCODE 60
+ISR_NOERRCODE 61
+ISR_NOERRCODE 62
+ISR_NOERRCODE 63
+ISR_NOERRCODE 64
+ISR_NOERRCODE 65
+ISR_NOERRCODE 66
+ISR_NOERRCODE 67
+ISR_NOERRCODE 68
+ISR_NOERRCODE 69
+ISR_NOERRCODE 70
+ISR_NOERRCODE 71
+ISR_NOERRCODE 72
+ISR_NOERRCODE 73
+ISR_NOERRCODE 74
+ISR_NOERRCODE 75
+ISR_NOERRCODE 76
+ISR_NOERRCODE 77
+ISR_NOERRCODE 78
+ISR_NOERRCODE 79
+ISR_NOERRCODE 80
+ISR_NOERRCODE 81
+ISR_NOERRCODE 82
+ISR_NOERRCODE 83
+ISR_NOERRCODE 84
+ISR_NOERRCODE 85
+ISR_NOERRCODE 86
+ISR_NOERRCODE 87
+ISR_NOERRCODE 88
+ISR_NOERRCODE 89
+ISR_NOERRCODE 90
+ISR_NOERRCODE 91
+ISR_NOERRCODE 92
+ISR_NOERRCODE 93
+ISR_NOERRCODE 94
+ISR_NOERRCODE 95
+ISR_NOERRCODE 96
+ISR_NOERRCODE 97
+ISR_NOERRCODE 98
+ISR_NOERRCODE 99
+ISR_NOERRCODE 100
+ISR_NOERRCODE 101
+ISR_NOERRCODE 102
+ISR_NOERRCODE 103
+ISR_NOERRCODE 104
+ISR_NOERRCODE 105
+ISR_NOERRCODE 106
+ISR_NOERRCODE 107
+ISR_NOERRCODE 108
+ISR_NOERRCODE 109
+ISR_NOERRCODE 110
+ISR_NOERRCODE 111
+ISR_NOERRCODE 112
+ISR_NOERRCODE 113
+ISR_NOERRCODE 114
+ISR_NOERRCODE 115
+ISR_NOERRCODE 116
+ISR_NOERRCODE 117
+ISR_NOERRCODE 118
+ISR_NOERRCODE 119
+ISR_NOERRCODE 120
+ISR_NOERRCODE 121
+ISR_NOERRCODE 122
+ISR_NOERRCODE 123
+ISR_NOERRCODE 124
+ISR_NOERRCODE 125
+ISR_NOERRCODE 126
+ISR_NOERRCODE 127
+ISR_NOERRCODE 128
+ISR_NOERRCODE 129
+ISR_NOERRCODE 130
+ISR_NOERRCODE 131
+ISR_NOERRCODE 132
+ISR_NOERRCODE 133
+ISR_NOERRCODE 134
+ISR_NOERRCODE 135
+ISR_NOERRCODE 136
+ISR_NOERRCODE 137
+ISR_NOERRCODE 138
+ISR_NOERRCODE 139
+ISR_NOERRCODE 140
+ISR_NOERRCODE 141
+ISR_NOERRCODE 142
+ISR_NOERRCODE 143
+ISR_NOERRCODE 144
+ISR_NOERRCODE 145
+ISR_NOERRCODE 146
+ISR_NOERRCODE 147
+ISR_NOERRCODE 148
+ISR_NOERRCODE 149
+ISR_NOERRCODE 150
+ISR_NOERRCODE 151
+ISR_NOERRCODE 152
+ISR_NOERRCODE 153
+ISR_NOERRCODE 154
+ISR_NOERRCODE 155
+ISR_NOERRCODE 156
+ISR_NOERRCODE 157
+ISR_NOERRCODE 158
+ISR_NOERRCODE 159
+ISR_NOERRCODE 160
+ISR_NOERRCODE 161
+ISR_NOERRCODE 162
+ISR_NOERRCODE 163
+ISR_NOERRCODE 164
+ISR_NOERRCODE 165
+ISR_NOERRCODE 166
+ISR_NOERRCODE 167
+ISR_NOERRCODE 168
+ISR_NOERRCODE 169
+ISR_NOERRCODE 170
+ISR_NOERRCODE 171
+ISR_NOERRCODE 172
+ISR_NOERRCODE 173
+ISR_NOERRCODE 174
+ISR_NOERRCODE 175
+ISR_NOERRCODE 176
+ISR_NOERRCODE 177
+ISR_NOERRCODE 178
+ISR_NOERRCODE 179
+ISR_NOERRCODE 180
+ISR_NOERRCODE 181
+ISR_NOERRCODE 182
+ISR_NOERRCODE 183
+ISR_NOERRCODE 184
+ISR_NOERRCODE 185
+ISR_NOERRCODE 186
+ISR_NOERRCODE 187
+ISR_NOERRCODE 188
+ISR_NOERRCODE 189
+ISR_NOERRCODE 190
+ISR_NOERRCODE 191
+ISR_NOERRCODE 192
+ISR_NOERRCODE 193
+ISR_NOERRCODE 194
+ISR_NOERRCODE 195
+ISR_NOERRCODE 196
+ISR_NOERRCODE 197
+ISR_NOERRCODE 198
+ISR_NOERRCODE 199
+ISR_NOERRCODE 200
+ISR_NOERRCODE 201
+ISR_NOERRCODE 202
+ISR_NOERRCODE 203
+ISR_NOERRCODE 204
+ISR_NOERRCODE 205
+ISR_NOERRCODE 206
+ISR_NOERRCODE 207
+ISR_NOERRCODE 208
+ISR_NOERRCODE 209
+ISR_NOERRCODE 210
+ISR_NOERRCODE 211
+ISR_NOERRCODE 212
+ISR_NOERRCODE 213
+ISR_NOERRCODE 214
+ISR_NOERRCODE 215
+ISR_NOERRCODE 216
+ISR_NOERRCODE 217
+ISR_NOERRCODE 218
+ISR_NOERRCODE 219
+ISR_NOERRCODE 220
+ISR_NOERRCODE 221
+ISR_NOERRCODE 222
+ISR_NOERRCODE 223
+ISR_NOERRCODE 224
+ISR_NOERRCODE 225
+ISR_NOERRCODE 226
+ISR_NOERRCODE 227
+ISR_NOERRCODE 228
+ISR_NOERRCODE 229
+ISR_NOERRCODE 230
+ISR_NOERRCODE 231
+ISR_NOERRCODE 232
+ISR_NOERRCODE 233
+ISR_NOERRCODE 234
+ISR_NOERRCODE 235
+ISR_NOERRCODE 236
+ISR_NOERRCODE 237
+ISR_NOERRCODE 238
+ISR_NOERRCODE 239
+ISR_NOERRCODE 240
+ISR_NOERRCODE 241
+ISR_NOERRCODE 242
+ISR_NOERRCODE 243
+ISR_NOERRCODE 244
+ISR_NOERRCODE 245
+ISR_NOERRCODE 246
+ISR_NOERRCODE 247
+ISR_NOERRCODE 248
+ISR_NOERRCODE 249
+ISR_NOERRCODE 250
+ISR_NOERRCODE 251
+ISR_NOERRCODE 252
+ISR_NOERRCODE 253
+ISR_NOERRCODE 254
+ISR_NOERRCODE 255

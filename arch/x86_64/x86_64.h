@@ -20,6 +20,12 @@
 #define PIC0_BASE               0x20
 #define PIC1_BASE               0x28
 
+#define KERNEL_CS 0x08
+#define KERNEL_DS 0x10
+#define USER_DS   0x18
+#define USER_CS   0x20
+#define TSS_SEG   0x28
+
 typedef enum {
   IRQ_TYPE_INTERRUPT  = 0x8E,
   IRQ_TYPE_TRAP       = 0x8F,
@@ -31,62 +37,21 @@ typedef __PACKED_STRUCT x86_64_stack_frame_t {
   uint64_t rip;
 } x86_64_stack_frame_t;
 
-// TODO: Make one x86_64_irq_frame_t, just calculate offsets differently in exc_handler and irq_handler
-
 typedef __PACKED_STRUCT {
+  uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
+  uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
+
+  uint64_t irq;
+  uint64_t err;
+
   uint64_t rip;
   uint64_t cs;
   uint64_t rflags;
-  uint64_t rsp;
-  uint64_t ss;
-} x86_64_irq_frame_cpu_t;
-
-typedef __PACKED_STRUCT {
-  uint64_t rax;
-  uint64_t rdx;
-  uint64_t rcx;
-  uint64_t rsi;
-  uint64_t rdi;
-  uint64_t r8;
-  uint64_t r9;
-  uint64_t r10;
-  uint64_t r11;
-  uint64_t rbp;
-  x86_64_irq_frame_cpu_t cpu;
+  uint64_t rsp;       // Note: Only pushed if privilege change (Ring 3->0) occurred
+  uint64_t ss;        // Note: Only pushed if privilege change occurred
 } x86_64_irq_frame_t;
 
-typedef struct {
-  x86_64_irq_frame_cpu_t * cpu_frame;
-  uint64_t irq;
-} x86_64_irq_handler_ctx_t;
-
-typedef __PACKED_STRUCT {
-  uint64_t cs;
-  uint64_t rflags;
-  uint64_t rsp;
-  uint64_t ss;
-} x86_64_irq_exc_frame_cpu_t;
-
-typedef __PACKED_STRUCT {
-  uint64_t rax;
-  uint64_t rdx;
-  uint64_t rcx;
-  uint64_t rsi;
-  uint64_t rdi;
-  uint64_t r8;
-  uint64_t r9;
-  uint64_t r10;
-  uint64_t r11;
-  uint64_t rbp;
-  uint64_t rip;
-  x86_64_irq_exc_frame_cpu_t cpu;
-} x86_64_irq_exc_frame_t;
-
-typedef struct {
-  x86_64_irq_exc_frame_cpu_t * cpu_frame;
-  uint64_t error_code;
-  uint64_t irq;
-} x86_64_irq_exc_handler_ctx_t;
+typedef void (*x86_64_irq_handler_t)(x86_64_irq_frame_t *);
 
 typedef __PACKED_STRUCT {
   uint32_t reserved_0;
@@ -130,19 +95,15 @@ void x86_64_init_gdt(kernel_t * kernel);
 void x86_64_init_idt(kernel_t * kernel);
 void x86_64_init_pic(uint8_t base0, uint8_t base1);
 void x86_64_init_pit(uint32_t freq, uint8_t counter, uint8_t mode);
-void x86_64_init_irq(kernel_t * kernel, void * idt, size_t irq_count);
 void x86_64_init_ps2();
 
 void x86_64_irq_register_handler(uint32_t irq, void * handler);
 
+void x86_64_irq_done(uint64_t n);
 void x86_64_irq_unmask(uint64_t n);
 void x86_64_irq_mask(uint64_t n);
-
-void x86_64_idt_set_handler(void *idt, uint64_t irq, irq_type_t type, void * handler);
-void x86_64_irq_done(uint64_t n);
 
 const char * x86_64_get_exc_name(uint64_t exc);
 
 void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame);
-void x86_64_dump_irq_exc_frame(x86_64_irq_exc_frame_t * frame);
 void x86_64_stack_trace(uint64_t rbp, uint64_t rip);

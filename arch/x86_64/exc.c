@@ -6,27 +6,18 @@
 #endif
 
 void x86_64_dump_irq_frame(x86_64_irq_frame_t * frame) {
-  kprintf("RIP    %016p | RSP    %016p\n", frame->cpu.rip, frame->cpu.rsp);
-  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs,  frame->cpu.ss);
-  kprintf("RBP    %016p | RFLAGS %016p\n", frame->rbp,     frame->cpu.rflags);
-
   kprintf("R8     %016p | R9     %016p\n", frame->r8,  frame->r9);
   kprintf("R10    %016p | R11    %016p\n", frame->r10, frame->r11);
-  kprintf("RDI    %016p | RSI    %016p\n", frame->rdi, frame->rsi);
-  kprintf("RAX    %016p | RCX    %016p\n", frame->rax, frame->rcx);
-  kprintf("RDX    %016p\n", frame->rdx);
-}
+  kprintf("R12    %016p | R13    %016p\n", frame->r12, frame->r13);
+  kprintf("R14    %016p | R15    %016p\n", frame->r14, frame->r15);
 
-void x86_64_dump_irq_exc_frame(x86_64_irq_exc_frame_t * frame) {
-  kprintf("RSP    %016p | RFLAGS %016p\n", frame->cpu.rsp, frame->cpu.rflags);
-  kprintf("CS     %016p | SS     %016p\n", frame->cpu.cs,  frame->cpu.ss);
+  kprintf("RBP    %016p | RDI    %016p\n", frame->rbp, frame->rdi);
+  kprintf("RSI    %016p | RDX    %016p\n", frame->rsi, frame->rdx);
+  kprintf("RCX    %016p | RBX    %016p\n", frame->rcx, frame->rbx);
+  kprintf("RAX    %016p | RFLAGS %016p\n", frame->rax, frame->rflags);
 
-  kprintf("R8     %016p | R9     %016p\n", frame->r8,  frame->r9);
-  kprintf("R10    %016p | R11    %016p\n", frame->r10, frame->r11);
-  kprintf("RIP    %016p | RBP    %016p\n", frame->rip, frame->rbp);
-  kprintf("RDI    %016p | RSI    %016p\n", frame->rdi, frame->rsi);
-  kprintf("RAX    %016p | RCX    %016p\n", frame->rax, frame->rcx);
-  kprintf("RDX    %016p\n", frame->rdx);
+  kprintf("RIP    %016p | RSP    %016p\n", frame->rip, frame->rsp);
+  kprintf("CS     %016p | SS     %016p\n", frame->cs,  frame->ss);
 }
 
 void x86_64_stack_trace(uint64_t rbp, uint64_t rip) {

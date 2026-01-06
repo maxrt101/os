@@ -4,12 +4,6 @@
 #include <x86_64.h>
 #include <kernel.h>
 
-#define KERNEL_CS 0x08
-#define KERNEL_DS 0x10
-#define USER_DS   0x18
-#define USER_CS   0x20
-#define TSS_SEG   0x28
-
 #define GDT_MAX_DESCRIPTORS 7
 
 #define GDT_DESC_ACCESS         0x01 /** Access bit */
