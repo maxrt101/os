@@ -36,7 +36,8 @@ void kernel_init_port(kernel_t * kernel);
 void kernel_init_io(kernel_t * kernel);
 
 void vkprintf(const char * fmt, va_list args);
-void kprintf(const char * fmt, ...);
+void kprintf(const char * fmt, ...)
+  __attribute__((__format__ (__printf__, 1, 2)));
 
 char kgetch();
 void kgetline(char * buf, size_t buf_size);
