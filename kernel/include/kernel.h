@@ -4,6 +4,7 @@
 #include <drivers/tty/tty.h>
 #include <memory/memmap.h>
 #include <memory/physmem.h>
+#include <sched/sched.h>
 #include <arch.h>
 #include <stdarg.h>
 
@@ -27,6 +28,8 @@ typedef struct kernel_t {
     uint64_t            kernel_phys_base;
     uint64_t            kernel_virt_base;
   } mem;
+
+  sched_t sched;
 } kernel_t;
 
 extern kernel_t kernel;

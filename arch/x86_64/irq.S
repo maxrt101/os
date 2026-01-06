@@ -41,8 +41,11 @@ x86_64_isr_common_stub:
     // We pass the stack pointer (RSP), which points to the struct we just built
     mov %rsp, %rdi
 
-    // 3. Call C Handler
+    // Call C Handler
     call x86_64_exception_handler
+
+    // Switch stack to whatever is returned from exception handler
+    mov %rax, %rsp
 
     // Restore Registers
     pop %r15

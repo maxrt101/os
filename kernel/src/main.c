@@ -1,12 +1,11 @@
 #include <drivers/keyboard/keyboard.h>
 #include <monitor/monitor.h>
+#include <memory/virtmem.h>
+#include <memory/memory.h>
 #include <event/event.h>
 #include <util/util.h>
 #include <kernel.h>
 #include <arch.h>
-
-#include "memory/memory.h"
-#include "memory/virtmem.h"
 
 #define FB_TEST 0
 
@@ -96,6 +95,8 @@ void kernel_init(kernel_t * kernel) {
   arch_init(kernel);
   kernel_virt_map();
   kheap_init();
+
+  sched_init(&kernel->sched);
 
   arch_enable_interrupts();
 }

@@ -32,3 +32,5 @@ void arch_virt_unmap_page(void * vaddr);
 uint64_t arch_virt_translate(void * vaddr);
 
 uint64_t arch_get_stack_pointer(void);
+
+arch_task_ctx_t arch_create_task_ctx(void * entry, void * arg, void * stack_top);

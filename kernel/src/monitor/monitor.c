@@ -11,6 +11,7 @@
 #define MONITOR_ARGV_MAX 16
 #define MONITOR_DEBUG_SC  0
 #define MONITOR_DEBUG_IRQ 0
+#define USE_MONITOR_INFO  0
 
 #if MONITOR_DEBUG_IRQ
 extern volatile int last_irq;
@@ -225,6 +226,27 @@ void monitor_cmd_mem(int argc, char ** argv) {
   kernel_phys_dump();
 }
 
+void task_worker(void * arg) {
+  while (1) {
+    kprintf("task %ld\n", kernel.sched.current->id);
+    sleep(time_seconds(1));
+  }
+}
+
+void monitor_cmd_task_test(int argc, char ** argv) {
+  if (argc == 1) {
+    kprintf("Usage: task-test new|kill|pause|resume\n");
+    return;
+  }
+
+  if (!strcmp(argv[1], "new")) {
+    sched_add(&kernel.sched, task_worker, NULL);
+  } else if (!strcmp(argv[1], "kill")) {
+  } else if (!strcmp(argv[1], "pause")) {
+  } else if (!strcmp(argv[1], "resume")) {
+  }
+}
+
 static struct {
   const char * name;
   void (*handler)(int, char **);
@@ -242,6 +264,7 @@ static struct {
   {"sleep", monitor_cmd_sleep},
   {"usleep", monitor_cmd_usleep},
   {"mem", monitor_cmd_mem},
+  {"task-test", monitor_cmd_task_test},
 };
 
 __STATIC_INLINE void monitor_run_cmd(char * buf) {
@@ -276,6 +299,7 @@ void monitor_main() {
   kprintf("Monitor\n> ");
 
   while (1) {
+#if USE_MONITOR_INFO
     int stat_x = kernel.tty.fb->size.width / tty_get_glyph_width(&kernel.tty) - 15;
 
     kprintf("\033[s");
@@ -288,6 +312,7 @@ void monitor_main() {
     kprintf("\033[4;%dH rsc=%p", stat_x, last_raw_sc);
 #endif
     kprintf("\033[u");
+#endif
 
     if (kgetline_async(buf, sizeof(buf), &buf_index)) {
       monitor_run_cmd(buf);

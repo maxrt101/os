@@ -461,6 +461,7 @@ font_t font_8x12_bold_sloppy_code = {
 };
 
 framebuffer_t tty_fb;
+lock_t tty_lock;
 
 void kernel_init_io(kernel_t * kernel) {
   tty_init(&kernel->tty, &kernel->framebuffer, &font_8x12_bold_sloppy_code);
@@ -472,7 +473,9 @@ void kernel_init_io(kernel_t * kernel) {
 void vkprintf(const char * fmt, va_list args) {
   static char buffer[512];
   if (vsnprintf(buffer, sizeof(buffer), fmt, args)) {
+    lock_waitlock(tty_lock);
     tty_print(&kernel.tty, buffer);
+    lock_release(tty_lock);
   }
 }
 

@@ -16,6 +16,8 @@
 #define IDT_DESC_RING_3       0x60
 #define IDT_DESC_PRESENT      0x80
 
+#define SCHED_TRIGGER_IRQ 32
+
 typedef __PACKED_STRUCT {
   uint16_t offset_1;
   uint16_t segment_selector;
@@ -33,7 +35,7 @@ typedef __PACKED_STRUCT {
 
 extern void * isr_stub_table[];
 
-void x86_64_exception_handler(x86_64_irq_frame_t * frame) {
+void * x86_64_exception_handler(x86_64_irq_frame_t * frame) {
   if (frame->irq < 32) {
     kprintf("\nException: %s (error_code=0x%lx)\n", x86_64_get_exc_name(frame->irq), frame->err);
     x86_64_dump_irq_frame(frame);
@@ -51,6 +53,12 @@ void x86_64_exception_handler(x86_64_irq_frame_t * frame) {
       kprintf("Warning: IRQ #%lu was triggered, but has no handler\n", frame->irq);
     }
   }
+
+  if (frame->irq == SCHED_TRIGGER_IRQ) {
+    return sched_switch(&kernel.sched, frame);
+  }
+
+  return frame;
 }
 
 __STATIC_INLINE void idt_load(idtr_t * idtr) {

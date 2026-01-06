@@ -65,6 +65,8 @@ typedef __PACKED_STRUCT {
   uint16_t iomap_base;
 } x86_64_tss_t;
 
+typedef void * arch_task_ctx_t;
+
 typedef struct arch_ctx_t {
   void * tss;
   void * gdt;
