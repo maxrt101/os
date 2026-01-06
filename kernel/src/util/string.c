@@ -336,6 +336,9 @@ char * vsnprintf(char * buf, size_t size, const char * fmt, va_list args) {
               if (fmt[index+1] == 'x') {
                 index++;
                 SNPRINTF_NUMBER(unsigned long long, ulltoa, 16);
+              } else if (fmt[index+1] == 'd') {
+                index++;
+                SNPRINTF_NUMBER(unsigned long long, ulltoa, 10);
               } else {
                 SNPRINTF_NUMBER(unsigned long long, ulltoa, 10);
               }
@@ -356,15 +359,21 @@ char * vsnprintf(char * buf, size_t size, const char * fmt, va_list args) {
             index++;
             if (fmt[index+1] == 'x') {
               index++;
-              SNPRINTF_NUMBER(long long, ulltoa, 16);
+              SNPRINTF_NUMBER(long long, lltoa, 16);
+            } else if (fmt[index+1] == 'd') {
+              index++;
+              SNPRINTF_NUMBER(long long, lltoa, 10);
             } else {
-              SNPRINTF_NUMBER(long long, ulltoa, 10);
+              SNPRINTF_NUMBER(long long, lltoa, 10);
             }
           } else if (fmt[index+1] == 'x') {
             index++;
-            SNPRINTF_NUMBER(long, ulltoa, 16);
+            SNPRINTF_NUMBER(long, ltoa, 16);
+          } else if (fmt[index+1] == 'd') {
+            index++;
+            SNPRINTF_NUMBER(long long, ltoa, 10);
           } else {
-            SNPRINTF_NUMBER(long, ultoa, 10);
+            SNPRINTF_NUMBER(long, ltoa, 10);
           }
           break;
         }
